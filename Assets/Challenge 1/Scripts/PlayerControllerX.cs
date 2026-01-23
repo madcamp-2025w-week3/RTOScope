@@ -1,66 +1,85 @@
 ﻿using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
 public class PlayerControllerX : MonoBehaviour {
-    [Header("Engine Settings")]
-    public float maxThrust = 100f;       // 최대 추력
-    public float throttleSpeed = 50f;     // 스로틀 증가 속도
-    private float currentThrottle = 0f;    // 현재 스로틀 (0~100)
+    [Header("Engine Power")]
+    public float maxSpeed = 200f;         // 최대 속도
+    public float minSpeed = 30f;          // 최소 속도 (실속 속도)
+    public float acceleration = 20f;      // 스로틀 반응 속도
 
-    [Header("Maneuver Settings")]
-    public float pitchSpeed = 80f;        // 상하 회전
-    public float rollSpeed = 100f;         // 좌우 기울기
-    public float yawSpeed = 40f;          // 좌우 평면 회전
-    public float liftForce = 1.5f;        // 양력 계수 (속도에 비례)
+    [Header("Control Sensitivity")]
+    public float pitchSpeed = 50f;        // 상하 회전 민감도
+    public float rollSpeed = 50f;         // 좌우 롤 민감도
+    public float yawSpeed = 20f;          // 좌우 요 민감도
 
-    private Rigidbody rb;
-    private float pitchInput;
-    private float rollInput;
-    private float yawInput;
+    [Tooltip("체크하면 '아래 방향키'를 눌렀을 때 비행기가 상승합니다. (비행 시뮬레이터 국룰)")]
+    public bool invertPitch = true;
+
+    [Header("Status Info (Read Only)")]
+    public float currentSpeed = 0f;
+    public float targetThrottle = 0f;     // 0.0 ~ 1.0 (0% ~ 100%)
 
     void Start() {
-        rb = GetComponent<Rigidbody>();
-        rb.useGravity = true;
-        rb.mass = 1.5f;
-        rb.drag = 0.5f;      // 공기 저항
-        rb.angularDrag = 1f; // 회전 저항
+        // 시작 시 중간 속도로 비행
+        targetThrottle = 0.5f;
+        currentSpeed = maxSpeed * 0.5f;
     }
 
     void Update() {
-        // 1. 입력 받기 (Input Manager 설정 필요)
-        pitchInput = Input.GetAxis("Vertical");     // W, S or 방향키
-        rollInput = Input.GetAxis("Horizontal");    // A, D
-        yawInput = (Input.GetKey(KeyCode.E) ? 1 : 0) - (Input.GetKey(KeyCode.Q) ? 1 : 0);
-
-        // 2. 스로틀 조절 (Shift/Ctrl 혹은 추가 키 설정)
-        if (Input.GetKey(KeyCode.LeftShift)) currentThrottle += throttleSpeed * Time.deltaTime;
-        if (Input.GetKey(KeyCode.LeftControl)) currentThrottle -= throttleSpeed * Time.deltaTime;
-        currentThrottle = Mathf.Clamp(currentThrottle, 0f, 100f);
+        HandleThrottle(); // 속도 제어 (Shift/Ctrl)
+        HandleMovement(); // 방향 제어 (방향키 + QE)
     }
 
-    void FixedUpdate() {
-        ApplyFlightPhysics();
+    void HandleThrottle() {
+        // Left Shift: 가속
+        if (Input.GetKey(KeyCode.LeftShift)) {
+            targetThrottle += Time.deltaTime * 0.5f;
+        }
+        // Left Control: 감속
+        else if (Input.GetKey(KeyCode.LeftControl)) {
+            targetThrottle -= Time.deltaTime * 0.5f;
+        }
+
+        targetThrottle = Mathf.Clamp01(targetThrottle);
+
+        // 목표 속도까지 부드럽게 도달
+        float targetSpeedVal = Mathf.Lerp(minSpeed, maxSpeed, targetThrottle);
+        currentSpeed = Mathf.Lerp(currentSpeed, targetSpeedVal, Time.deltaTime * acceleration);
     }
 
-    void ApplyFlightPhysics() {
-        // 1. 전진 추력 (Forward Thrust)
-        rb.AddRelativeForce(Vector3.forward * currentThrottle * maxThrust);
+    void HandleMovement() {
+        // 1. Pitch (상하 회전) - 방향키 위/아래
+        float pitchInput = 0f;
+        if (Input.GetKey(KeyCode.UpArrow)) pitchInput = 1f;
+        else if (Input.GetKey(KeyCode.DownArrow)) pitchInput = -1f;
 
-        // 2. 회전 로직 (Pitch, Roll, Yaw)
-        // 실제 전투기처럼 조종하기 위해 로컬 좌표계 기준으로 힘을 줌
-        rb.AddRelativeTorque(Vector3.right * pitchInput * pitchSpeed);
-        rb.AddRelativeTorque(Vector3.forward * -rollInput * rollSpeed);
-        rb.AddRelativeTorque(Vector3.up * yawInput * yawSpeed);
+        // 시뮬레이터 방식: '아래 키'를 누르면 상승(Pitch Up)해야 하므로 부호 반전
+        // invertPitch가 켜져 있으면 Down(-1)일 때 위로 솟아야 함 -> 양수(+) 회전 필요
+        float pitchDir = invertPitch ? -pitchInput : pitchInput;
 
-        // 3. 양력(Lift) 시뮬레이션
-        // 속도가 빠를수록 위로 떠오르는 힘을 줌 (날개의 수직 방향)
-        float forwardSpeed = Vector3.Dot(rb.velocity, transform.forward);
-        Vector3 lift = transform.up * forwardSpeed * liftForce;
-        rb.AddForce(lift);
+        // 2. Roll (좌우 기울기) - 방향키 좌/우
+        float rollInput = 0f;
+        if (Input.GetKey(KeyCode.RightArrow)) rollInput = 1f;
+        else if (Input.GetKey(KeyCode.LeftArrow)) rollInput = -1f;
+
+        // 3. Yaw (수평 회전) - Q / E
+        float yawInput = 0f;
+        if (Input.GetKey(KeyCode.E)) yawInput = 1f;
+        else if (Input.GetKey(KeyCode.Q)) yawInput = -1f;
+
+        // 4. 회전 적용 (Transform 직접 회전)
+        // Pitch(X축), Yaw(Y축), Roll(Z축)
+        transform.Rotate(Vector3.right * pitchDir * pitchSpeed * Time.deltaTime);
+        transform.Rotate(Vector3.up * yawInput * yawSpeed * Time.deltaTime);
+        transform.Rotate(Vector3.forward * -rollInput * rollSpeed * Time.deltaTime);
+
+        // 5. 전진 이동
+        transform.position += transform.forward * currentSpeed * Time.deltaTime;
     }
 
-    // 현재 스로틀 값을 확인하기 위한 GUI (선택 사항)
     void OnGUI() {
-        GUI.Box(new Rect(10, 10, 150, 30), "Throttle: " + (int)currentThrottle + "%");
+        // 조종석 HUD 정보 표시
+        GUI.Box(new Rect(20, 20, 200, 60), "FLIGHT SYSTEM");
+        GUI.Label(new Rect(30, 40, 180, 20), $"THR: {(int)(targetThrottle * 100)}%  |  SPD: {(int)currentSpeed} km/h");
+        GUI.Label(new Rect(30, 60, 180, 20), $"ALT: {(int)transform.position.y} m");
     }
 }

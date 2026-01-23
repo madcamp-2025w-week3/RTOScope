@@ -7,7 +7,7 @@ public class FollowPlayerX : MonoBehaviour {
     // 비행기 뒤쪽 상단에 위치하도록 오프셋 설정 (필요에 따라 조절해)
     [SerializeField] private Vector3 offset = new Vector3(0, 3, -10);
     // 카메라가 따라오는 부드러움 정도 (0에 가까울수록 부드러움)
-    [SerializeField] private float smoothSpeed = 0.005f;
+    [SerializeField] private float smoothSpeed = 0.01f;
 
     void LateUpdate() {
         if (plane == null) return;
