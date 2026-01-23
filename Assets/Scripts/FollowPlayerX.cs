@@ -1,23 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FollowPlayerX : MonoBehaviour {
     public GameObject plane;
-    // 비행기 뒤쪽 상단에 위치하도록 오프셋 설정 (필요에 따라 조절해)
-    [SerializeField] private Vector3 offset = new Vector3(0, 3, -10);
-    // 카메라가 따라오는 부드러움 정도 (0에 가까울수록 부드러움)
-    [SerializeField] private float smoothSpeed = 0.01f;
+    [SerializeField] private Vector3 offset = new Vector3(0, 2, -7); // 약간 더 뒤로 배치
+    [SerializeField] private float positionSmoothTime = 0.2f;      // 위치 부드러움 (조금 늘림)
+    [SerializeField] private float rotationSmoothTime = 5.0f;      // 회전 부드러움 (추가)
+
+    private Vector3 velocity = Vector3.zero;
 
     void LateUpdate() {
         if (plane == null) return;
 
-        // 1. 목표 위치 계산 (이전과 동일)
+        // 1. 목표 위치 계산
         Vector3 targetPosition = plane.transform.position + (plane.transform.rotation * offset);
-        transform.position = Vector3.Lerp(transform.position, targetPosition, smoothSpeed);
 
-        // 2. 핵심 수정: 비행기의 방향(Forward)과 위쪽(Up)을 카메라와 동기화
-        // LookAt의 두 번째 인자로 비행기의 transform.up을 전달함
-        transform.LookAt(plane.transform.position, plane.transform.up);
+        // 2. 위치 추종 (SmoothDamp 유지하되 수치 조절)
+        transform.position = Vector3.SmoothDamp(
+            transform.position,
+            targetPosition,
+            ref velocity,
+            positionSmoothTime
+        );
+
+        // 3. 회전 추종 (LookAt 대신 Slerp로 부드럽게 방향 전환)
+        // 비행기의 현재 방향을 바라보게 함
+        Quaternion targetRotation = Quaternion.LookRotation(plane.transform.position - transform.position, plane.transform.up);
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * rotationSmoothTime);
     }
 }

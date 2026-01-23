@@ -3,7 +3,7 @@
 public class PlayerControllerX : MonoBehaviour {
     [Header("Engine Power")]
     public float maxSpeed = 200f;         // 최대 속도
-    public float minSpeed = 30f;          // 최소 속도 (실속 속도)
+    public float minSpeed = 25f;          // 최소 속도 (실속 속도)
     public float acceleration = 20f;      // 스로틀 반응 속도
 
     [Header("Control Sensitivity")]
