@@ -135,6 +135,9 @@ namespace RTOScope.Runtime.Bootstrap
             if (_sensor != null) _sensor.State = _state;
             if (_view != null) _view.State = _state;
 
+            // 6. RTOS 태스크에 AircraftState 연결
+            _flightControlTask.SetState(_state);
+
             Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 3개 태스크 등록됨 (+ IdleTask)");
         }
 

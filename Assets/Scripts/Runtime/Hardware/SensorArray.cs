@@ -46,8 +46,6 @@ namespace RTOScope.Runtime.Hardware
 
         private void ReadSensors()
         {
-            // TODO: Unity 상태를 AircraftState에 기록
-            
             // 자세 정보
             Vector3 euler = _aircraftTransform.eulerAngles;
             State.Pitch = NormalizeAngle(euler.x);
@@ -67,6 +65,47 @@ namespace RTOScope.Runtime.Hardware
 
             _previousPosition = _aircraftTransform.position;
             _previousAltitude = _aircraftTransform.position.y;
+
+            // 키보드 입력 읽기
+            ReadKeyboardInput();
+        }
+
+        /// <summary>키보드 입력을 읽어 AircraftState에 저장</summary>
+        private void ReadKeyboardInput()
+        {
+            // 피치: 위/아래 화살표
+            // 비행 시뮬레이터 국룰: '아래 키'를 누르면 기수가 상승 (invertPitch)
+            float pitchInput = 0f;
+            if (Input.GetKey(KeyCode.UpArrow))
+                pitchInput = 1f;  // 기수 하강 (Pitch Down)
+            else if (Input.GetKey(KeyCode.DownArrow))
+                pitchInput = -1f; // 기수 상승 (Pitch Up)
+            State.PitchInput = pitchInput;
+
+            // 롤: 좌/우 화살표
+            float rollInput = 0f;
+            if (Input.GetKey(KeyCode.LeftArrow))
+                rollInput = -1f; // 좌측 롤
+            else if (Input.GetKey(KeyCode.RightArrow))
+                rollInput = 1f;  // 우측 롤
+            State.RollInput = rollInput;
+
+            // 요: Q/E
+            float yawInput = 0f;
+            if (Input.GetKey(KeyCode.Q))
+                yawInput = -1f; // 좌회전
+            else if (Input.GetKey(KeyCode.E))
+                yawInput = 1f;  // 우회전
+            State.YawInput = yawInput;
+
+            // 스로틀: Left Shift (가속) / Left Ctrl (감속)
+            float throttleChange = 0f;
+            if (Input.GetKey(KeyCode.LeftShift))
+                throttleChange = 0.5f * Time.deltaTime; // 초당 50% 증가
+            else if (Input.GetKey(KeyCode.LeftControl))
+                throttleChange = -0.5f * Time.deltaTime; // 초당 50% 감소
+
+            State.ThrottleInput = Mathf.Clamp(State.ThrottleInput + throttleChange, 0f, 1f);
         }
 
         /// <summary>각도를 -180 ~ 180 범위로 정규화</summary>
