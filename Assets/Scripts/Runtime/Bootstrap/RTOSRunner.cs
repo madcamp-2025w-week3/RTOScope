@@ -11,11 +11,11 @@
  * - 이것이 RTOS 시스템의 진입점
  */
 
-using UnityEngine;
 using RTOScope.RTOS.Kernel;
 using RTOScope.RTOS.Tasks;
 using RTOScope.Runtime.Aircraft;
 using RTOScope.Runtime.Hardware;
+using UnityEngine;
 
 namespace RTOScope.Runtime.Bootstrap
 {
@@ -38,7 +38,7 @@ namespace RTOScope.Runtime.Bootstrap
         // RTOS 컴포넌트
         private RTOSKernel _kernel;
         private AircraftState _state;
-        
+
         // 태스크 인스턴스
         private FlightControlTask _flightControlTask;
         private RadarTask _radarTask;
@@ -113,7 +113,7 @@ namespace RTOScope.Runtime.Bootstrap
                 deadline: 0.01f,
                 deadlineType: DeadlineType.Hard
             );
-            
+
             _kernel.RegisterTask(
                 task: _radarTask,
                 priority: TaskPriority.High,
@@ -121,7 +121,7 @@ namespace RTOScope.Runtime.Bootstrap
                 deadline: 0.05f,
                 deadlineType: DeadlineType.Soft
             );
-            
+
             _kernel.RegisterTask(
                 task: _healthMonitor,
                 priority: TaskPriority.Medium,
@@ -135,14 +135,14 @@ namespace RTOScope.Runtime.Bootstrap
             if (_sensor != null) _sensor.State = _state;
             if (_view != null) _view.State = _state;
 
-            Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 3개 태스크 등록됨");
+            Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 3개 태스크 등록됨 (+ IdleTask)");
         }
 
         /// <summary>RTOS 시작</summary>
         public void StartRTOS()
         {
             if (_kernel == null) return;
-            
+
             // 커널이 모든 태스크 초기화 수행
             _kernel.Start();
             Debug.Log("[RTOSRunner] RTOS 시작됨");

@@ -2,24 +2,19 @@
  * ============================================================================
  * IRTOSTask.cs
  * ============================================================================
- * 
+ *
  * [모듈 역할]
- * RTOS 태스크 인터페이스 - 순수 실행 로직(Execute)만 담당
- * 
+ * RTOS 태스크 인터페이스 - 상태 머신 기반 실행 로직
+ *
  * [아키텍처 위치]
  * RTOS Layer > Kernel > IRTOSTask
  * - 순수 C# 코드로 작성 (Unity API 사용 금지)
  * - 태스크의 "할 일"만 정의 (상태 관리는 TCB에서)
- * 
+ *
  * [설계 철학]
- * - 인터페이스 분리 원칙 (ISP): 태스크 로직과 관리 정보 분리
- * - TCB(Task Control Block)가 이 인터페이스를 참조하여 관리
- * - "나는 비행 제어를 한다", "나는 레이더를 돌린다" 같은 역할만 정의
- * 
- * [사용 예]
- * - FlightControlTask : IRTOSTask (비행 제어 로직)
- * - RadarTask : IRTOSTask (레이더 처리 로직)
- * - HealthMonitor : IRTOSTask (시스템 모니터링 로직)
+ * - 상태 머신(State Machine) 패턴: 태스크를 원자적 단계(Step)로 분할
+ * - 각 Step은 짧은 시간 내에 완료되어야 함
+ * - 커널이 Step 사이에서 선점 가능
  * ============================================================================
  */
 
@@ -35,7 +30,8 @@ namespace RTOScope.RTOS.Kernel
         Ready,      // 실행 준비 완료, CPU 할당 대기 중
         Running,    // 현재 실행 중
         Blocked,    // 리소스/이벤트 대기 중
-        Suspended   // 일시 정지됨
+        Suspended,  // 일시 정지됨
+        Waiting     // 다음 주기까지 대기 중 (주기적 태스크)
     }
 
     /// <summary>
@@ -48,7 +44,7 @@ namespace RTOScope.RTOS.Kernel
         High = 1,       // 높은 우선순위 (센서 읽기, 레이더 등)
         Medium = 2,     // 중간 우선순위 (상태 모니터링)
         Low = 3,        // 낮은 우선순위 (로깅, UI 갱신 등)
-        Idle = 4        // 가장 낮은 우선순위 (백그라운드 작업)
+        Idle = 255      // 가장 낮은 우선순위 (IdleTask 전용)
     }
 
     /// <summary>
@@ -57,12 +53,13 @@ namespace RTOScope.RTOS.Kernel
     public enum DeadlineType
     {
         Hard,   // 위반 시 시스템 실패 (비행 제어 등)
-        Soft    // 위반 시 성능 저하만 발생 (레이더 등)
+        Soft,   // 위반 시 성능 저하만 발생 (레이더 등)
+        None    // 데드라인 없음 (IdleTask)
     }
 
     /// <summary>
     /// RTOS 태스크 인터페이스
-    /// 모든 태스크가 구현해야 할 계약
+    /// 모든 태스크가 구현해야 할 계약 (상태 머신 기반)
     /// </summary>
     public interface IRTOSTask
     {
@@ -72,17 +69,43 @@ namespace RTOScope.RTOS.Kernel
         string Name { get; }
 
         /// <summary>
+        /// 현재 진행 중인 Step 인덱스 (상태 머신의 가상 PC)
+        /// </summary>
+        int CurrentStep { get; }
+
+        /// <summary>
+        /// 총 Step 개수
+        /// </summary>
+        int TotalSteps { get; }
+
+        /// <summary>
+        /// 현재 Step의 예상 실행 시간 (WCET, 초 단위)
+        /// 커널이 시간 예산 계산에 사용
+        /// </summary>
+        float CurrentStepWCET { get; }
+
+        /// <summary>
+        /// 모든 Step이 완료되었는지 여부
+        /// true면 태스크가 Waiting 상태로 전환됨
+        /// </summary>
+        bool IsWorkComplete { get; }
+
+        /// <summary>
         /// 태스크 초기화
         /// 시스템 시작 시 한 번 호출됨
         /// </summary>
         void Initialize();
 
         /// <summary>
-        /// 태스크 메인 실행 로직
-        /// 스케줄러에 의해 매 실행 시점마다 호출됨
+        /// 현재 Step 하나만 실행
+        /// 커널에 의해 호출되며, 한 Step 실행 후 즉시 반환해야 함
         /// </summary>
-        /// <param name="deltaTime">이전 실행으로부터 경과 시간 (초)</param>
-        void Execute(float deltaTime);
+        void ExecuteStep();
+
+        /// <summary>
+        /// 태스크를 처음 상태로 리셋 (다음 주기 준비)
+        /// </summary>
+        void ResetForNextPeriod();
 
         /// <summary>
         /// 태스크 정리
@@ -92,7 +115,6 @@ namespace RTOScope.RTOS.Kernel
 
         /// <summary>
         /// 데드라인 미스 발생 시 호출되는 핸들러
-        /// Hard Deadline 태스크는 여기서 안전 모드 진입 등 처리
         /// </summary>
         void OnDeadlineMiss();
     }

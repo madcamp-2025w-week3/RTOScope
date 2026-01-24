@@ -11,8 +11,8 @@
  * - 메모리 사용률
  */
 
-using UnityEngine;
 using RTOScope.RTOS.Kernel;
+using UnityEngine;
 
 namespace RTOScope.Runtime.UI
 {
@@ -51,9 +51,11 @@ namespace RTOScope.Runtime.UI
         {
             GUILayout.Label($"<b>Kernel State:</b> {_status.State}");
             GUILayout.Label($"<b>Ticks:</b> {_status.TotalTicks:N0}");
-            GUILayout.Label($"<b>System Time:</b> {_status.SystemTime:F2}s");
+            GUILayout.Label($"<b>Virtual Time:</b> {_status.VirtualTime:F3}s");
             GUILayout.Label($"<b>Tasks:</b> {_status.RegisteredTaskCount}");
             GUILayout.Label($"<b>Current Task:</b> {_status.CurrentTaskName}");
+            GUILayout.Label($"<b>CPU Utilization:</b> {_status.CpuUtilization:F1}%");
+            GUILayout.Label($"<b>Idle Time:</b> {_status.IdleTime:F3}s");
 
             GUILayout.Space(10);
             GUILayout.Label("<b>--- Task List ---</b>");
