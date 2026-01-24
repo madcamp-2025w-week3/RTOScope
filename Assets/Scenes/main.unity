@@ -512,11 +512,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 573453567e55b468d959b66ab676a102, type: 3}
+  m_Script: {fileID: 11500000, guid: f4a062d3375d1a145b847f7788466edf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   plane: {fileID: 426736361}
-  offset: {x: 0, y: 1, z: -10}
+  offset: {x: 0, y: 2, z: -7}
   positionSmoothTime: 0.2
   rotationSmoothTime: 5
 --- !u!114 &534669908
