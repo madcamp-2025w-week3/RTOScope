@@ -56,6 +56,8 @@ namespace RTOScope.Runtime.UI
             GUILayout.Label($"<b>Current Task:</b> {_status.CurrentTaskName}");
             GUILayout.Label($"<b>CPU Utilization:</b> {_status.CpuUtilization:F1}%");
             GUILayout.Label($"<b>Idle Time:</b> {_status.IdleTime:F3}s");
+            GUILayout.Label($"<b>Ready Queue:</b> {_status.ReadyTaskCount} tasks");
+            GUILayout.Label($"<b>Context Switches:</b> {_status.ContextSwitchCount}");
 
             GUILayout.Space(10);
             GUILayout.Label("<b>--- Task List ---</b>");

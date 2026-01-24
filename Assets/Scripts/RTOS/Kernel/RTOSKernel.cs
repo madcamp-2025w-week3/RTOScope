@@ -13,6 +13,7 @@
  * - RTOSRunner(Unity MonoBehaviour)에 의해 호출됨
  *
  * [스케줄링 방식]
+ * - ReadyList: FreeRTOS 스타일 우선순위별 연결 리스트
  * - 각 태스크는 상태 머신(State Machine)으로 구현
  * - 커널은 매 Step 실행 후 선점 여부를 판단
  * - 가상 시간(Virtual Time) 기반으로 정확한 타이밍 시뮬레이션
@@ -37,7 +38,7 @@ namespace RTOScope.RTOS.Kernel
 
     /// <summary>
     /// RTOS 메인 커널 클래스
-    /// 상태 머신 기반 선점형 스케줄링을 수행한다.
+    /// ReadyList 기반 선점형 스케줄링을 수행한다.
     /// </summary>
     public class RTOSKernel
     {
@@ -46,16 +47,18 @@ namespace RTOScope.RTOS.Kernel
         // =====================================================================
 
         private KernelState _state;
-        private readonly List<TCB> _registeredTasks;
+        private readonly List<TCB> _allTasks;         // 모든 등록된 태스크 (관리용)
+        private readonly ReadyList _readyList;        // Ready 상태 태스크들
         private readonly TimeManager _timeManager;
         private readonly DeadlineManager _deadlineManager;
         private readonly TaskStatistics _statistics;
 
-        private TCB _currentTcb;          // 현재 실행 중인 TCB
-        private TCB _idleTaskTcb;         // Idle 태스크 TCB (항상 존재)
+        private TCB _currentTcb;          // 현재 실행 중인 TCB (Running 상태)
+        private TCB _idleTaskTcb;         // Idle 태스크 TCB (항상 Ready)
         private ulong _totalTicks;
         private float _virtualTime;       // 가상 시간 (시뮬레이션 시간)
         private float _totalIdleTime;     // 총 Idle 시간
+        private int _contextSwitchCount;  // 컨텍스트 스위칭 횟수
 
         // =====================================================================
         // 프로퍼티
@@ -63,13 +66,15 @@ namespace RTOScope.RTOS.Kernel
 
         public KernelState State => _state;
         public TCB CurrentTcb => _currentTcb;
-        public string CurrentTaskName => _currentTcb?.Task.Name ?? "None";
+        public string CurrentTaskName => _currentTcb?.Task.Name ?? "Idle";
         public ulong TotalTicks => _totalTicks;
-        public int RegisteredTaskCount => _registeredTasks.Count;
+        public int RegisteredTaskCount => _allTasks.Count;
         public TimeManager TimeManager => _timeManager;
         public TaskStatistics Statistics => _statistics;
         public float VirtualTime => _virtualTime;
         public float TotalIdleTime => _totalIdleTime;
+        public ReadyList ReadyList => _readyList;
+        public int ContextSwitchCount => _contextSwitchCount;
 
         // =====================================================================
         // 생성자
@@ -78,13 +83,15 @@ namespace RTOScope.RTOS.Kernel
         public RTOSKernel()
         {
             _state = KernelState.Stopped;
-            _registeredTasks = new List<TCB>();
+            _allTasks = new List<TCB>();
+            _readyList = new ReadyList();
             _timeManager = new TimeManager();
             _deadlineManager = new DeadlineManager();
             _statistics = new TaskStatistics();
             _totalTicks = 0;
             _virtualTime = 0f;
             _totalIdleTime = 0f;
+            _contextSwitchCount = 0;
         }
 
         // =====================================================================
@@ -96,26 +103,29 @@ namespace RTOScope.RTOS.Kernel
         /// </summary>
         public void Start()
         {
-            // 1. Idle 태스크 생성 및 등록 (가장 먼저)
+            // 1. Idle 태스크 생성 (가장 먼저)
             var idleTask = new IdleTask();
             _idleTaskTcb = new TCB(idleTask, TaskPriority.Idle, 0f, 0f, DeadlineType.None);
             _idleTaskTcb.Task.Initialize();
             _idleTaskTcb.SetState(TaskState.Ready);
+            // Idle은 ReadyList에 추가하지 않음 (특별 관리)
 
             // 2. 모든 등록된 태스크 초기화
-            // 주기적 태스크는 Waiting 상태로 시작하고, 첫 틱에서 활성화됨
-            foreach (var tcb in _registeredTasks)
+            foreach (var tcb in _allTasks)
             {
                 tcb.Task.Initialize();
+
                 if (tcb.Period > 0)
                 {
-                    // 주기적 태스크: Waiting 상태로 시작 (NextActivationTime = 0이므로 즉시 활성화)
+                    // 주기적 태스크: Waiting 상태로 시작
+                    // NextActivationTime = 0이므로 첫 틱에서 활성화됨
                     tcb.SetState(TaskState.Waiting);
                 }
                 else
                 {
-                    // 비주기적 태스크: Ready 상태로 시작
+                    // 비주기적 태스크: 즉시 Ready 상태로 ReadyList에 추가
                     tcb.SetState(TaskState.Ready);
+                    _readyList.Add(tcb);
                 }
             }
 
@@ -127,11 +137,22 @@ namespace RTOScope.RTOS.Kernel
         /// </summary>
         public void Stop()
         {
-            foreach (var tcb in _registeredTasks)
+            // 현재 태스크가 있으면 정리
+            if (_currentTcb != null && _currentTcb != _idleTaskTcb)
+            {
+                _currentTcb.SetState(TaskState.Suspended);
+            }
+            _currentTcb = null;
+
+            // 모든 태스크 정리
+            foreach (var tcb in _allTasks)
             {
                 tcb.Task.Cleanup();
                 tcb.SetState(TaskState.Suspended);
             }
+
+            // ReadyList 비우기
+            _readyList.Clear();
 
             _idleTaskTcb?.Task.Cleanup();
             _state = KernelState.Stopped;
@@ -139,6 +160,7 @@ namespace RTOScope.RTOS.Kernel
 
         /// <summary>
         /// 태스크를 커널에 등록한다 (TCB 생성).
+        /// Start() 호출 전에 등록해야 함.
         /// </summary>
         public void RegisterTask(
             IRTOSTask task,
@@ -151,7 +173,7 @@ namespace RTOScope.RTOS.Kernel
                 throw new ArgumentNullException(nameof(task));
 
             var tcb = new TCB(task, priority, period, deadline, deadlineType);
-            _registeredTasks.Add(tcb);
+            _allTasks.Add(tcb);
         }
 
         /// <summary>
@@ -172,45 +194,34 @@ namespace RTOScope.RTOS.Kernel
             // 가상 시간 예산이 남아있는 동안 태스크 실행
             while (virtualBudget > 0.00001f) // 부동소수점 오차 고려
             {
-                // 1. 주기적 태스크 활성화 검사
+                // 1. 주기적 태스크 활성화 검사 (Waiting -> Ready)
                 ActivatePeriodicTasks();
 
-                // 2. 스케줄링 (가장 높은 우선순위 Ready 태스크 선택)
+                // 2. 스케줄링 (ReadyList에서 최고 우선순위 선택)
                 TCB nextTcb = Schedule();
 
-                // 3. 선점 처리
-                if (_currentTcb != null && nextTcb != _currentTcb)
+                // 3. 컨텍스트 스위칭 처리
+                if (nextTcb != _currentTcb)
                 {
-                    if (_currentTcb.State == TaskState.Running)
-                    {
-                        // 현재 태스크가 선점됨
-                        _currentTcb.SetState(TaskState.Ready);
-                        _statistics.RecordContextSwitch();
-                    }
+                    ContextSwitch(nextTcb);
                 }
 
-                _currentTcb = nextTcb;
-
+                // 4. 현재 태스크 없으면 Idle 실행
                 if (_currentTcb == null)
                 {
-                    // Ready 태스크가 없으면 Idle 실행
                     _currentTcb = _idleTaskTcb;
                 }
 
-                _currentTcb.SetState(TaskState.Running);
-
-                // 4. 현재 Step의 WCET 가져오기
+                // 5. 현재 Step의 WCET 가져오기
                 float stepWCET = _currentTcb.Task.CurrentStepWCET;
-
-                // 남은 예산과 비교하여 실제 실행 시간 결정
                 float execTime = Math.Min(stepWCET, virtualBudget);
 
-                // 5. 태스크의 한 Step 실행
+                // 6. 태스크 한 Step 실행
                 _currentTcb.RecordExecutionStart(_virtualTime);
                 _currentTcb.Task.ExecuteStep();
                 _currentTcb.RecordExecutionComplete(execTime);
 
-                // 6. 통계 기록
+                // 7. 통계 기록
                 if (_currentTcb == _idleTaskTcb)
                 {
                     _totalIdleTime += execTime;
@@ -220,28 +231,17 @@ namespace RTOScope.RTOS.Kernel
                     _statistics.RecordExecution(_currentTcb, execTime);
                 }
 
-                // 7. 가상 시간 전진
+                // 8. 가상 시간 전진
                 _virtualTime += execTime;
                 virtualBudget -= execTime;
 
-                // 8. 태스크 완료 체크
+                // 9. 태스크 완료 처리
                 if (_currentTcb.Task.IsWorkComplete)
                 {
-                    if (_currentTcb == _idleTaskTcb)
-                    {
-                        // Idle은 즉시 리셋
-                        _currentTcb.Task.ResetForNextPeriod();
-                    }
-                    else
-                    {
-                        // 일반 태스크는 Waiting 상태로 전환
-                        _currentTcb.SetState(TaskState.Waiting);
-                        _currentTcb.Task.ResetForNextPeriod();
-                        _currentTcb = null;
-                    }
+                    HandleTaskCompletion();
                 }
 
-                // 9. 데드라인 검사
+                // 10. 데드라인 검사
                 CheckDeadlines();
             }
 
@@ -252,7 +252,7 @@ namespace RTOScope.RTOS.Kernel
         /// <summary>
         /// 모든 TCB 목록 반환 (UI용)
         /// </summary>
-        public IReadOnlyList<TCB> GetAllTasks() => _registeredTasks;
+        public IReadOnlyList<TCB> GetAllTasks() => _allTasks;
 
         /// <summary>
         /// Idle TCB 반환
@@ -260,57 +260,139 @@ namespace RTOScope.RTOS.Kernel
         public TCB GetIdleTask() => _idleTaskTcb;
 
         // =====================================================================
-        // 비공개 메서드
+        // 비공개 메서드 - 스케줄링
         // =====================================================================
 
+        /// <summary>
+        /// 주기적 태스크 활성화 (Waiting -> Ready)
+        /// 가상 시간이 NextActivationTime에 도달하면 Ready로 전환
+        /// </summary>
         private void ActivatePeriodicTasks()
         {
-            foreach (var tcb in _registeredTasks)
+            foreach (var tcb in _allTasks)
             {
-                // 주기적 태스크이고, 활성화 시간이 되었고, Waiting 상태인 경우
                 if (tcb.Period > 0 &&
-                    _virtualTime >= tcb.NextActivationTime &&
-                    tcb.State == TaskState.Waiting)
+                    tcb.State == TaskState.Waiting &&
+                    _virtualTime >= tcb.NextActivationTime)
                 {
+                    // 태스크 활성화
                     tcb.Activate(_virtualTime);
                     tcb.Task.ResetForNextPeriod();
+
+                    // ReadyList에 추가
+                    _readyList.Add(tcb);
                 }
             }
         }
 
+        /// <summary>
+        /// 스케줄링: ReadyList에서 가장 높은 우선순위 태스크 선택
+        /// </summary>
         private TCB Schedule()
         {
-            // 가장 높은 우선순위(낮은 숫자)의 Ready 태스크 선택
-            TCB highestPriorityTcb = null;
+            // ReadyList에서 최고 우선순위 태스크 확인 (제거 안함)
+            TCB highest = _readyList.PeekHighest();
 
-            foreach (var tcb in _registeredTasks)
+            if (highest == null)
             {
-                if (tcb.State == TaskState.Ready || tcb.State == TaskState.Running)
+                // Ready 태스크 없음 -> Idle 반환
+                return null;
+            }
+
+            // 현재 실행 중인 태스크와 비교
+            if (_currentTcb != null &&
+                _currentTcb != _idleTaskTcb &&
+                _currentTcb.State == TaskState.Running)
+            {
+                // 현재 태스크보다 높은 우선순위면 선점
+                if (highest.CurrentPriority < _currentTcb.CurrentPriority)
                 {
-                    if (highestPriorityTcb == null ||
-                        tcb.CurrentPriority < highestPriorityTcb.CurrentPriority)
-                    {
-                        highestPriorityTcb = tcb;
-                    }
+                    return highest;
+                }
+                // 동일 또는 낮은 우선순위면 현재 태스크 계속
+                return _currentTcb;
+            }
+
+            return highest;
+        }
+
+        /// <summary>
+        /// 컨텍스트 스위칭 수행
+        /// </summary>
+        private void ContextSwitch(TCB nextTcb)
+        {
+            // 이전 태스크 처리
+            if (_currentTcb != null && _currentTcb != _idleTaskTcb)
+            {
+                if (_currentTcb.State == TaskState.Running)
+                {
+                    // 선점된 태스크를 ReadyList에 다시 추가
+                    _currentTcb.SetState(TaskState.Ready);
+                    _readyList.Add(_currentTcb);
                 }
             }
 
-            return highestPriorityTcb; // null이면 Idle이 실행됨
+            // 새 태스크로 전환
+            if (nextTcb != null && nextTcb != _idleTaskTcb)
+            {
+                // ReadyList에서 제거
+                _readyList.Remove(nextTcb);
+                nextTcb.SetState(TaskState.Running);
+            }
+
+            _currentTcb = nextTcb;
+            _contextSwitchCount++;
+            _statistics.RecordContextSwitch();
         }
 
+        /// <summary>
+        /// 태스크 완료 처리
+        /// </summary>
+        private void HandleTaskCompletion()
+        {
+            if (_currentTcb == _idleTaskTcb)
+            {
+                // Idle은 즉시 리셋 (항상 Ready)
+                _currentTcb.Task.ResetForNextPeriod();
+            }
+            else
+            {
+                // 주기적 태스크: Waiting 상태로 전환
+                _currentTcb.SetState(TaskState.Waiting);
+                _currentTcb.Task.ResetForNextPeriod();
+                _currentTcb = null;
+            }
+        }
+
+        /// <summary>
+        /// 데드라인 검사
+        /// </summary>
         private void CheckDeadlines()
         {
-            foreach (var tcb in _registeredTasks)
+            foreach (var tcb in _allTasks)
             {
-                // Running 또는 Ready 상태이고 데드라인이 지난 경우
+                // Ready 또는 Running 상태이고 데드라인이 지난 경우
                 if ((tcb.State == TaskState.Running || tcb.State == TaskState.Ready) &&
                     tcb.AbsoluteDeadline > 0 &&
                     _virtualTime > tcb.AbsoluteDeadline)
                 {
+                    // 데드라인 미스 기록
                     tcb.RecordDeadlineMiss();
                     _deadlineManager.RecordDeadlineMiss(tcb, tcb.AbsoluteDeadline, _virtualTime);
 
-                    // 데드라인 미스 후 처리: 다음 주기로 넘어감
+                    // ReadyList에서 제거
+                    if (tcb.State == TaskState.Ready)
+                    {
+                        _readyList.Remove(tcb);
+                    }
+
+                    // Running 상태였다면 현재 태스크 클리어
+                    if (tcb == _currentTcb)
+                    {
+                        _currentTcb = null;
+                    }
+
+                    // Waiting 상태로 전환 (다음 주기 대기)
                     tcb.SetState(TaskState.Waiting);
                     tcb.Task.ResetForNextPeriod();
                 }
@@ -326,11 +408,13 @@ namespace RTOScope.RTOS.Kernel
             {
                 State = _state,
                 TotalTicks = _totalTicks,
-                RegisteredTaskCount = _registeredTasks.Count,
-                CurrentTaskName = _currentTcb?.Task.Name ?? "None",
+                RegisteredTaskCount = _allTasks.Count,
+                CurrentTaskName = _currentTcb?.Task.Name ?? "Idle",
                 VirtualTime = _virtualTime,
                 IdleTime = _totalIdleTime,
-                CpuUtilization = _virtualTime > 0 ? (1f - _totalIdleTime / _virtualTime) * 100f : 0f
+                CpuUtilization = _virtualTime > 0 ? (1f - _totalIdleTime / _virtualTime) * 100f : 0f,
+                ReadyTaskCount = _readyList.Count,
+                ContextSwitchCount = _contextSwitchCount
             };
         }
     }
@@ -347,5 +431,7 @@ namespace RTOScope.RTOS.Kernel
         public float VirtualTime;
         public float IdleTime;
         public float CpuUtilization;
+        public int ReadyTaskCount;
+        public int ContextSwitchCount;
     }
 }
