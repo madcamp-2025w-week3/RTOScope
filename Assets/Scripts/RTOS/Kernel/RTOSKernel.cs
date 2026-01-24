@@ -49,21 +49,21 @@ namespace RTOScope.RTOS.Kernel
         // =====================================================================
         // 필드
         // =====================================================================
-        
+
         private KernelState _state;
         private readonly List<TCB> _registeredTasks;  // TCB로 변경
         private readonly PriorityQueue _readyQueue;
         private readonly TimeManager _timeManager;
         private readonly DeadlineManager _deadlineManager;
         private readonly TaskStatistics _statistics;
-        
+
         private TCB _currentTcb;  // 현재 실행 중인 TCB
         private ulong _totalTicks;
 
         // =====================================================================
         // 프로퍼티
         // =====================================================================
-        
+
         public KernelState State => _state;
         public TCB CurrentTcb => _currentTcb;
         public string CurrentTaskName => _currentTcb?.Task.Name ?? "None";
@@ -75,7 +75,7 @@ namespace RTOScope.RTOS.Kernel
         // =====================================================================
         // 생성자
         // =====================================================================
-        
+
         public RTOSKernel()
         {
             _state = KernelState.Stopped;
@@ -90,7 +90,7 @@ namespace RTOScope.RTOS.Kernel
         // =====================================================================
         // 공개 메서드
         // =====================================================================
-        
+
         /// <summary>
         /// RTOS 커널을 시작한다.
         /// </summary>
@@ -100,13 +100,13 @@ namespace RTOScope.RTOS.Kernel
             // - 모든 등록된 태스크를 Ready 상태로 전환
             // - 첫 번째 태스크 선택
             // - 타이머 초기화
-            
+
             foreach (var tcb in _registeredTasks)
             {
                 tcb.Task.Initialize();
                 tcb.SetState(TaskState.Ready);
             }
-            
+
             _state = KernelState.Running;
         }
 
@@ -121,7 +121,7 @@ namespace RTOScope.RTOS.Kernel
                 tcb.Task.Cleanup();
                 tcb.SetState(TaskState.Suspended);
             }
-            
+
             _state = KernelState.Stopped;
         }
 
@@ -129,7 +129,7 @@ namespace RTOScope.RTOS.Kernel
         /// 태스크를 커널에 등록한다 (TCB 생성).
         /// </summary>
         public void RegisterTask(
-            IRTOSTask task, 
+            IRTOSTask task,
             TaskPriority priority,
             float period = 0f,
             float deadline = 0f,
@@ -137,9 +137,9 @@ namespace RTOScope.RTOS.Kernel
         {
             if (task == null)
                 throw new ArgumentNullException(nameof(task));
-            
+
             // TODO: 중복 등록 검사
-            
+
             var tcb = new TCB(task, priority, period, deadline, deadlineType);
             _registeredTasks.Add(tcb);
         }
@@ -153,25 +153,25 @@ namespace RTOScope.RTOS.Kernel
                 return;
 
             _totalTicks++;
-            
+
             // 1. 시간 관리자 업데이트
             _timeManager.Update(deltaTime);
-            
+
             // 2. 주기적 태스크 활성화 검사
             CheckPeriodicTasks();
-            
+
             // 3. 스케줄링 수행
             ScheduleNextTask();
-            
+
             // 4. 현재 태스크 실행
             if (_currentTcb != null)
             {
                 ExecuteCurrentTask(deltaTime);
             }
-            
+
             // 5. 데드라인 검사
             CheckDeadlines();
-            
+
             // 6. 통계 업데이트
             _statistics.UpdateSystemTime(deltaTime);
         }
@@ -184,12 +184,12 @@ namespace RTOScope.RTOS.Kernel
         // =====================================================================
         // 비공개 메서드
         // =====================================================================
-        
+
         private void CheckPeriodicTasks()
         {
             // TODO: 주기적 태스크 활성화 로직 구현
             float currentTime = _timeManager.CurrentTime;
-            
+
             foreach (var tcb in _registeredTasks)
             {
                 if (tcb.Period > 0 && currentTime >= tcb.NextActivationTime)
@@ -198,22 +198,22 @@ namespace RTOScope.RTOS.Kernel
                 }
             }
         }
-        
+
         private void ScheduleNextTask()
         {
             // TODO: 선점형 스케줄링 로직 구현
             // - Rate Monotonic Scheduling (RMS)
             // - Earliest Deadline First (EDF)
             // - 우선순위 역전 방지
-            
+
             // 현재는 단순히 가장 높은 우선순위의 Ready 태스크 선택
             TCB highestPriorityTcb = null;
-            
+
             foreach (var tcb in _registeredTasks)
             {
                 if (tcb.State == TaskState.Ready)
                 {
-                    if (highestPriorityTcb == null || 
+                    if (highestPriorityTcb == null ||
                         tcb.CurrentPriority < highestPriorityTcb.CurrentPriority)
                     {
                         highestPriorityTcb = tcb;
@@ -240,13 +240,13 @@ namespace RTOScope.RTOS.Kernel
         private void ExecuteCurrentTask(float deltaTime)
         {
             if (_currentTcb == null) return;
-            
+
             float startTime = _timeManager.CurrentTime;
             _currentTcb.RecordExecutionStart(startTime);
-            
+
             // 태스크 실행
             _currentTcb.Task.Execute(deltaTime);
-            
+
             // 실행 시간 기록
             float executionTime = _timeManager.CurrentTime - startTime;
             _currentTcb.RecordExecutionComplete(executionTime);
@@ -257,10 +257,10 @@ namespace RTOScope.RTOS.Kernel
         {
             // TODO: 데드라인 검사 로직 개선
             float currentTime = _timeManager.CurrentTime;
-            
+
             foreach (var tcb in _registeredTasks)
             {
-                if (tcb.State == TaskState.Running && 
+                if (tcb.State == TaskState.Running &&
                     tcb.AbsoluteDeadline > 0 &&
                     currentTime > tcb.AbsoluteDeadline)
                 {
