@@ -51,12 +51,12 @@ namespace RTOScope.RTOS.Tasks
 
         // 각 Step의 WCET (초 단위)
         private static readonly float[] _stepWCETs = {
-            0.002f,   // Step 0: 스윕 (2ms)
-            0.003f,   // Step 1: 데이터 수집 (3ms)
-            0.005f,   // Step 2: 필터링 (5ms)
-            0.008f,   // Step 3: 표적 식별 (8ms)
-            0.002f    // Step 4: 추적 업데이트 (2ms)
-        };                // 총 WCET: 20ms
+            0.0005f,  // Step 0: 스윕 (0.5ms)
+            0.0008f,  // Step 1: 데이터 수집 (0.8ms)
+            0.001f,   // Step 2: 필터링 (1ms)
+            0.0015f,  // Step 3: 표적 식별 (1.5ms)
+            0.0005f   // Step 4: 추적 업데이트 (0.5ms)
+        };                // 총 WCET: 4.3ms
 
         // =====================================================================
         // 필드
