@@ -241,6 +241,77 @@ MonoBehaviour:
   m_LightCookieSize: {x: 1, y: 1}
   m_LightCookieOffset: {x: 0, y: 0}
   m_SoftShadowQuality: 0
+--- !u!1 &188941610
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 188941611}
+  - component: {fileID: 188941613}
+  - component: {fileID: 188941612}
+  m_Layer: 0
+  m_Name: RTOS_System
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &188941611
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188941610}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &188941612
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188941610}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c20036289809ca549b9302f77823ff68, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _runner: {fileID: 188941613}
+  _showDashboard: 1
+  _windowRect:
+    serializedVersion: 2
+    x: 10
+    y: 100
+    width: 300
+    height: 400
+--- !u!114 &188941613
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 188941610}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5fd3ddac7cf682f4f9b62c6bee512174, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _aircraftTransform: {fileID: 426736364}
+  _actuator: {fileID: 426736368}
+  _sensor: {fileID: 426736367}
+  _view: {fileID: 426736366}
+  _autoStart: 1
+  _useFixedUpdate: 1
 --- !u!1001 &347156382
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -398,10 +469,27 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 6739063260678973069, guid: c8c018869460c4f4d824fc3dbe0f3f68, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 426736368}
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 426736367}
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 426736366}
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 426736365}
   m_SourcePrefab: {fileID: 100100000, guid: c8c018869460c4f4d824fc3dbe0f3f68, type: 3}
 --- !u!1 &426736361 stripped
 GameObject:
@@ -409,6 +497,81 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 426736360}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &426736364 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6058291721749942166, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+    type: 3}
+  m_PrefabInstance: {fileID: 426736360}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &426736365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426736361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 023fc14b85b6b4449bd170852108691e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSpeed: 200
+  minSpeed: 25
+  acceleration: 20
+  pitchSpeed: 50
+  rollSpeed: 50
+  yawSpeed: 20
+  invertPitch: 1
+  currentSpeed: 0
+  targetThrottle: 0
+--- !u!114 &426736366
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426736361}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a18635096f1d3914e8f6e4d5cf016231, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _ailerons: []
+  _elevator: {fileID: 0}
+  _rudder: {fileID: 0}
+  _engineTrail: {fileID: 0}
+  _controlSurfaceMaxAngle: 30
+--- !u!114 &426736367
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426736361}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74dbbbe0b25e0384a81a6744ce61a9e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _aircraftTransform: {fileID: 426736364}
+--- !u!114 &426736368
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 426736361}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 095bc7806195b164a95eb072b95ead2c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _aircraftTransform: {fileID: 426736364}
+  _maxSpeed: 200
+  _minSpeed: 25
+  _pitchRate: 50
+  _rollRate: 50
+  _yawRate: 20
 --- !u!1 &534669902
 GameObject:
   m_ObjectHideFlags: 0
@@ -762,3 +925,4 @@ SceneRoots:
   - {fileID: 170076735}
   - {fileID: 1313498725}
   - {fileID: 426736360}
+  - {fileID: 188941611}
