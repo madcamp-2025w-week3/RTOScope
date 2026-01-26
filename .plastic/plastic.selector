@@ -1,4 +1,0 @@
-repository "RTOScope 2026-01-23_13-02-14/RTOScope@14569594793154@cloud"
-  path "/"
-    br "/main"
-    co "/main"
