@@ -42,7 +42,7 @@ namespace RTOScope.RTOS.Tasks
         public string Name => "Idle";
         public int CurrentStep => _currentStep;
         public int TotalSteps => TOTAL_STEPS;
-        public float CurrentStepWCET => _stepWCETs[_currentStep];
+        public float CurrentStepWCET => _currentStep < TOTAL_STEPS ? _stepWCETs[_currentStep] : 0f;
         public bool IsWorkComplete => _currentStep >= TOTAL_STEPS;
         public float TotalIdleTime => _totalIdleTime;
 

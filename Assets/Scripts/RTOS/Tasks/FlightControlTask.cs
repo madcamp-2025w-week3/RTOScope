@@ -67,7 +67,6 @@ namespace RTOScope.RTOS.Tasks
         private float _pitchCommand;
         private float _rollCommand;
         private float _yawCommand;
-        private float _throttleCommand;
 
         // =====================================================================
         // 프로퍼티
@@ -86,7 +85,6 @@ namespace RTOScope.RTOS.Tasks
         public FlightControlTask()
         {
             _currentStep = 0;
-            _throttleCommand = 0.5f;
         }
 
         /// <summary>
@@ -107,7 +105,6 @@ namespace RTOScope.RTOS.Tasks
             _pitchCommand = 0f;
             _rollCommand = 0f;
             _yawCommand = 0f;
-            _throttleCommand = 0.5f;
         }
 
         public void ExecuteStep()
