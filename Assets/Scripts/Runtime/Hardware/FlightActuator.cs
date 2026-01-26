@@ -69,10 +69,7 @@ namespace RTOScope.Runtime.Hardware
             {
                 _rigidbody = GetComponent<Rigidbody>();
             }
-        }
 
-        private void Start()
-        {
             if (_rigidbody != null)
             {
                 // 초기 속도 설정 (비행 중 시작)
