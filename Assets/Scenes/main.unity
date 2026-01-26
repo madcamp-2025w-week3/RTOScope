@@ -562,11 +562,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _aircraftTransform: {fileID: 1600020515}
+  _aircraftRigidbody: {fileID: 1600020521}
   _actuator: {fileID: 1600020519}
   _sensor: {fileID: 1600020518}
   _view: {fileID: 1600020517}
   _autoStart: 1
   _useFixedUpdate: 1
+  _logInitialization: 1
 --- !u!4 &1201857610
 Transform:
   m_ObjectHideFlags: 0
@@ -628,6 +630,36 @@ PrefabInstance:
     - target: {fileID: 5480501633515934053, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_Mass
+      value: 12000
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_UseGravity
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_AngularDrag
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_Interpolate
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      propertyPath: m_CollisionDetection
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6058291721749942166, guid: c8c018869460c4f4d824fc3dbe0f3f68,
@@ -783,6 +815,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _aircraftTransform: {fileID: 1600020515}
+  _rigidbody: {fileID: 1600020521}
+  _seaLevelDensity: 1.225
+  _scaleHeight: 8500
+  _minVelocityThreshold: 1
 --- !u!114 &1600020519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -795,13 +831,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 095bc7806195b164a95eb072b95ead2c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _aircraftTransform: {fileID: 1600020515}
+  _rigidbody: {fileID: 1600020521}
   _maxSpeed: 200
   _minSpeed: 25
-  _acceleration: 20
-  _pitchRate: 50
-  _rollRate: 50
-  _yawRate: 20
+  _maxAngularSpeed: 5
+  _showDebugInfo: 1
 --- !u!114 &1600020520
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -823,6 +857,12 @@ MonoBehaviour:
   invertPitch: 1
   currentSpeed: 0
   targetThrottle: 0
+--- !u!54 &1600020521 stripped
+Rigidbody:
+  m_CorrespondingSourceObject: {fileID: 5849467940295433870, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+    type: 3}
+  m_PrefabInstance: {fileID: 1600020514}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1631140152
 PrefabInstance:
   m_ObjectHideFlags: 0
