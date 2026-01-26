@@ -896,7 +896,7 @@ GameObject:
   - component: {fileID: 6058291721749942166}
   - component: {fileID: 5849467940295433870}
   m_Layer: 0
-  m_Name: F-16
+  m_Name: F-16_Grounded
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
