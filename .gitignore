@@ -101,4 +101,4 @@ InitTestScene*.unity*
 .vscode/
 AGENTS.md
 
-/[Dd]ot[Pp]lastic/
+.plastic/
