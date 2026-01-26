@@ -95,17 +95,18 @@ namespace RTOScope.RTOS.Tasks
         // 조종/안정성 상수 (선형 공력 모델)
         private const float MIN_AIRSPEED = 15f; // m/s
         private const float MIN_DYNAMIC_PRESSURE = 20f; // Pa, 수치 안정용
-        private const float INPUT_RESPONSE = 6f; // 1/s, 입력 완만화
+        private const float INPUT_RESPONSE = 6f; // 1/s, 입력 완만화 (Roll/Yaw)
+        private const float PITCH_INPUT_RESPONSE = 3f; // 1/s, 피치 입력 완만화
         private const float CONTROL_Q_REF = 6000f; // Pa, 고속 조종 민감도 완화 기준
 
-        private const float MAX_ELEVATOR_DEFLECTION = 25f; // deg
+        private const float MAX_ELEVATOR_DEFLECTION = 20f; // deg
         private const float MAX_AILERON_DEFLECTION = 21f;  // deg
         private const float MAX_RUDDER_DEFLECTION = 30f;   // deg
 
         // 안정성/조종성 미분 계수 (선형 근사)
         private const float CM_ALPHA = -0.8f;
-        private const float CM_Q = -12.5f;
-        private const float CM_DE = 1.1f;
+        private const float CM_Q = -16f;
+        private const float CM_DE = 0.9f;
 
         private const float CL_BETA = -0.12f;
         private const float CL_P = -0.5f;
@@ -319,8 +320,9 @@ namespace RTOScope.RTOS.Tasks
             _yawInput = _state.YawInput;
             _throttleInput = _state.ThrottleInput;
 
+            float smoothPitch = 1f - Mathf.Exp(-PITCH_INPUT_RESPONSE * DELTA_TIME);
             float smooth = 1f - Mathf.Exp(-INPUT_RESPONSE * DELTA_TIME);
-            _pitchInputSmooth = Mathf.Lerp(_pitchInputSmooth, _pitchInput, smooth);
+            _pitchInputSmooth = Mathf.Lerp(_pitchInputSmooth, _pitchInput, smoothPitch);
             _rollInputSmooth = Mathf.Lerp(_rollInputSmooth, _rollInput, smooth);
             _yawInputSmooth = Mathf.Lerp(_yawInputSmooth, _yawInput, smooth);
 
