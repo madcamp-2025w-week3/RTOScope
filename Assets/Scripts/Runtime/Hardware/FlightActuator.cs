@@ -60,11 +60,9 @@ namespace RTOScope.Runtime.Hardware
 
         private float _currentSpeed;
 
-        // =====================================================================
-        // Unity 생명주기
-        // =====================================================================
+        public float CurrentSpeed => _currentSpeed;
 
-        private void Awake()
+        private void Start()
         {
             // Rigidbody 자동 참조
             if (_rigidbody == null)
