@@ -1,0 +1,211 @@
+/*
+ * HUDController.cs - HUD 텍스트 업데이트 컨트롤러
+ *
+ * [역할] HUD 배경 이미지 위에 텍스트를 갱신
+ * [위치] Runtime Layer > UI (Unity MonoBehaviour)
+ *
+ * [설계 의도]
+ * - Screen Space - Camera Canvas에서 동작
+ * - 전투기 상태를 읽어 SPD/ALT/HDG/MSL 표시
+ * - 누락된 참조는 안전하게 대체값 사용
+ */
+
+using TMPro;
+using UnityEngine;
+using RTOScope.Runtime.Hardware;
+
+namespace RTOScope.Runtime.UI
+{
+    /// <summary>
+    /// HUD 숫자 텍스트 업데이트 컨트롤러
+    /// </summary>
+    public class HUDController : MonoBehaviour
+    {
+        [Header("References")]
+        [SerializeField] private Camera cockpitCamera;
+        [SerializeField] private Transform aircraftTransform;
+        [SerializeField] private Rigidbody aircraftRigidbody;
+        [SerializeField] private PlayerControllerX playerControllerX;
+        [SerializeField] private FlightActuator flightActuator;
+
+        [Header("HUD Text")]
+        [SerializeField] private TMP_Text spdText;
+        [SerializeField] private TMP_Text altText;
+        [SerializeField] private TMP_Text hdgText;
+        [SerializeField] private TMP_Text mslText;
+
+        [Header("Display Options")]
+        [SerializeField] private bool padHeadingTo3Digits = true;
+
+        [Tooltip("0이면 매 프레임 갱신, 0.05~0.1 권장")]
+        [SerializeField] private float updateIntervalSeconds = 0f;
+
+        [Header("Speed Fallback")]
+        [Tooltip("Rigidbody.velocity.magnitude(m/s) -> knots 변환에 사용")]
+        [SerializeField] private float metersPerSecondToKnots = 1.94384f;
+
+        [Header("Weapons")]
+        [SerializeField] public int missileCount = 2;
+
+        private float _nextUpdateTime;
+        private bool _warnedMissingRefs;
+
+        private void Awake()
+        {
+            AutoAssignReferences();
+            TryConfigureCanvas();
+            WarnIfMissingReferences();
+        }
+
+        private void LateUpdate()
+        {
+            if (updateIntervalSeconds > 0f)
+            {
+                if (Time.time < _nextUpdateTime) return;
+                _nextUpdateTime = Time.time + updateIntervalSeconds;
+            }
+
+            UpdateHUDText();
+        }
+
+        private void AutoAssignReferences()
+        {
+            if (cockpitCamera == null)
+            {
+                var camGo = GameObject.Find("Cockpit Camera");
+                if (camGo != null) cockpitCamera = camGo.GetComponent<Camera>();
+            }
+
+            if (aircraftTransform == null)
+            {
+                var aircraftGo = GameObject.Find("F-16");
+                if (aircraftGo != null) aircraftTransform = aircraftGo.transform;
+            }
+
+            if (aircraftTransform != null)
+            {
+                if (playerControllerX == null)
+                    playerControllerX = aircraftTransform.GetComponent<PlayerControllerX>();
+
+                if (aircraftRigidbody == null)
+                    aircraftRigidbody = aircraftTransform.GetComponent<Rigidbody>();
+
+                if (flightActuator == null)
+                    flightActuator = aircraftTransform.GetComponent<FlightActuator>();
+            }
+
+            if (playerControllerX == null)
+                playerControllerX = FindObjectOfType<PlayerControllerX>();
+
+            if (flightActuator == null)
+                flightActuator = FindObjectOfType<FlightActuator>();
+
+            if (aircraftRigidbody == null && aircraftTransform == null)
+                aircraftRigidbody = FindObjectOfType<Rigidbody>();
+        }
+
+        private void TryConfigureCanvas()
+        {
+            if (cockpitCamera == null) return;
+
+            var canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = cockpitCamera;
+        }
+
+        private void WarnIfMissingReferences()
+        {
+            if (_warnedMissingRefs) return;
+
+            if (spdText == null || altText == null || hdgText == null || mslText == null)
+            {
+                Debug.LogWarning("[HUDController] TMP_Text 참조가 누락되었습니다. HUD 텍스트가 표시되지 않을 수 있습니다.");
+            }
+
+            if (aircraftTransform == null)
+                Debug.LogWarning("[HUDController] aircraftTransform이 비어있습니다. F-16 자동 할당 실패.");
+
+            if (playerControllerX == null && aircraftRigidbody == null)
+                Debug.LogWarning("[HUDController] PlayerControllerX와 Rigidbody가 모두 비어있습니다. 속도 대체값이 0으로 표시됩니다.");
+
+            if (cockpitCamera == null)
+                Debug.LogWarning("[HUDController] cockpitCamera가 비어있습니다. Canvas Render Camera를 수동으로 지정하세요.");
+
+            _warnedMissingRefs = true;
+        }
+
+        private void UpdateHUDText()
+        {
+            if (aircraftTransform == null) return;
+
+            float speedValue = GetSpeedValue();
+            int speedInt = Mathf.RoundToInt(speedValue);
+
+            float altFeet = aircraftTransform.position.y * 3.28084f;
+            int altInt = Mathf.RoundToInt(altFeet);
+
+            int headingInt = NormalizeHeadingToInt(aircraftTransform.eulerAngles.y);
+
+            if (spdText != null)
+            {
+                spdText.text = speedInt.ToString();
+            }
+
+            if (altText != null)
+            {
+                altText.text = altInt.ToString();
+                // 축약 옵션 예시: 12.5k
+                // altText.text = showAltLabel ? $"{altLabel} {altFeet / 1000f:0.0}k" : $"{altFeet / 1000f:0.0}k";
+            }
+
+            if (hdgText != null)
+            {
+                string headingText = padHeadingTo3Digits ? headingInt.ToString("000") : headingInt.ToString();
+                hdgText.text = headingText;
+            }
+
+            if (mslText != null)
+            {
+                int count = Mathf.Max(0, missileCount);
+                mslText.text = count.ToString();
+            }
+        }
+
+        private float GetSpeedValue()
+        {
+            if (playerControllerX != null)
+            {
+                float speed = playerControllerX.currentSpeed;
+                if (speed > 0.01f) return speed;
+            }
+
+            if (flightActuator != null)
+            {
+                float speed = flightActuator.CurrentSpeed;
+                if (speed > 0.01f) return speed;
+            }
+
+            if (aircraftRigidbody != null)
+            {
+                return aircraftRigidbody.velocity.magnitude * metersPerSecondToKnots;
+            }
+
+            return 0f;
+        }
+
+        private int NormalizeHeadingToInt(float headingDegrees)
+        {
+            float h = headingDegrees % 360f;
+            if (h < 0f) h += 360f;
+            return Mathf.RoundToInt(h);
+        }
+
+        /// <summary>미사일 수 감소 (추후 발사 이벤트에 연결)</summary>
+        public void ConsumeMissile(int amount = 1)
+        {
+            missileCount = Mathf.Max(0, missileCount - Mathf.Max(0, amount));
+        }
+    }
+}

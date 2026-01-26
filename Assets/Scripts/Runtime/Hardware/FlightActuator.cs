@@ -37,6 +37,8 @@ namespace RTOScope.Runtime.Hardware
 
         private float _currentSpeed;
 
+        public float CurrentSpeed => _currentSpeed;
+
         private void Start()
         {
             // 시작 시 중간 속도로 비행
