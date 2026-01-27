@@ -320,6 +320,20 @@ namespace RTOScope.Runtime.UI
             // 연료
             GUI.Label(new Rect(270, y, 100, 20), $"FUEL: {_data.FuelPercent:F0}%", _labelStyle);
 
+            // 엔진 온도 (과열 시 색상 변경)
+            Color prevColor = GUI.color;
+            if (_data.OverheatCritical)
+                GUI.color = Color.red;
+            else if (_data.OverheatWarning)
+                GUI.color = Color.yellow;
+
+            string tempStr = $"EGT: {_data.EngineTemp:F0}°C";
+            if (_data.ThrustLimitScale < 1f)
+                tempStr += $" [{_data.ThrustLimitScale:P0}]";
+            GUI.Label(new Rect(390, y, 150, 20), tempStr, _labelStyle);
+
+            GUI.color = prevColor;
+
             // 수직속도
             string vsSign = _data.VerticalSpeed >= 0 ? "+" : "";
             GUI.Label(new Rect(Screen.width - 150, y, 120, 20),

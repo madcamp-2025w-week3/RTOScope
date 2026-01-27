@@ -221,14 +221,25 @@ namespace RTOScope.Runtime.Hardware
 
             // -----------------------------------------------------------------
             // 스로틀: Left Shift (가속) / Left Ctrl (감속)
+            // 연료가 없으면 스로틀 증가 불가
             // -----------------------------------------------------------------
-            float throttleChange = 0f;
-            if (Input.GetKey(KeyCode.LeftShift))
-                throttleChange = 1.0f * Time.deltaTime; // 초당 100% 증가 (더 빠른 응답)
-            else if (Input.GetKey(KeyCode.LeftControl))
-                throttleChange = -1.0f * Time.deltaTime; // 초당 100% 감소
+            bool hasFuel = State.FuelRemainingLiters > 0f;
 
-            State.ThrottleInput = Mathf.Clamp(State.ThrottleInput + throttleChange, 0f, 1f);
+            if (!hasFuel)
+            {
+                // 연료 없음: 스로틀 강제 0
+                State.ThrottleInput = 0f;
+            }
+            else
+            {
+                float throttleChange = 0f;
+                if (Input.GetKey(KeyCode.LeftShift))
+                    throttleChange = 1.0f * Time.deltaTime; // 초당 100% 증가
+                else if (Input.GetKey(KeyCode.LeftControl))
+                    throttleChange = -1.0f * Time.deltaTime; // 초당 100% 감소
+
+                State.ThrottleInput = Mathf.Clamp(State.ThrottleInput + throttleChange, 0f, 1f);
+            }
 
             // -----------------------------------------------------------------
             // 무장 입력 (락온/브레이크락/발사)
@@ -236,6 +247,12 @@ namespace RTOScope.Runtime.Hardware
             State.LockOnInput = Input.GetKey(KeyCode.R);
             State.BreakLockInput = Input.GetKey(KeyCode.X);
             State.FireInput = Input.GetKey(KeyCode.F);
+
+            // -----------------------------------------------------------------
+            // 대응책 입력 (플레어/채프)
+            // -----------------------------------------------------------------
+            State.FlareInput = Input.GetKey(KeyCode.Z);  // Z: 플레어
+            State.ChaffInput = Input.GetKey(KeyCode.C);  // C: 채프
         }
 
         // =====================================================================

@@ -173,6 +173,22 @@ namespace RTOScope.Runtime.Aircraft
         public float ThrottleLimit { get; set; }
 
         // =====================================================================
+        // 엔진 온도/과열 상태
+        // =====================================================================
+
+        /// <summary>엔진 온도 (°C) - 정상 범위: 200~600°C</summary>
+        public float EngineTemp { get; set; }
+
+        /// <summary>엔진 과열 경고</summary>
+        public bool OverheatWarning { get; set; }
+
+        /// <summary>엔진 과열 위험 (임계 상태)</summary>
+        public bool OverheatCritical { get; set; }
+
+        /// <summary>과열로 인한 추력 제한 스케일 (0~1, 1=정상)</summary>
+        public float ThrustLimitScale { get; set; }
+
+        // =====================================================================
         // 충돌 회피 (Collision Avoidance)
         // =====================================================================
 
@@ -247,6 +263,71 @@ namespace RTOScope.Runtime.Aircraft
         public bool WeaponFireAck { get; set; }
 
         // =====================================================================
+        // Stores Management (무장 관리)
+        // =====================================================================
+
+        /// <summary>하드포인트별 무장 타입 (0=없음, 1=AIM-9, 2=AIM-120)</summary>
+        public int[] HardpointWeaponType { get; set; }
+
+        /// <summary>하드포인트별 남은 탄수</summary>
+        public int[] HardpointAmmoCount { get; set; }
+
+        /// <summary>하드포인트별 잼 상태</summary>
+        public bool[] HardpointJammed { get; set; }
+
+        /// <summary>하드포인트별 준비 상태</summary>
+        public bool[] HardpointReady { get; set; }
+
+        /// <summary>현재 선택된 무장이 발사 가능한지</summary>
+        public bool WeaponReady { get; set; }
+
+        /// <summary>현재 선택된 무장이 잼 상태인지</summary>
+        public bool WeaponJammed { get; set; }
+
+        /// <summary>무장 잼 메시지</summary>
+        public string WeaponJamMessage { get; set; }
+
+        // =====================================================================
+        // Countermeasure (플레어/채프) 상태
+        // =====================================================================
+
+        /// <summary>미사일 위협 감지 여부</summary>
+        public bool MissileThreatDetected { get; set; }
+
+        /// <summary>미사일 위협 거리 (m)</summary>
+        public float MissileThreatDistance { get; set; }
+
+        /// <summary>미사일 위협 방향 (정규화)</summary>
+        public Vector3 MissileThreatDirection { get; set; }
+
+        /// <summary>플레어 발사 입력</summary>
+        public bool FlareInput { get; set; }
+
+        /// <summary>채프 발사 입력</summary>
+        public bool ChaffInput { get; set; }
+
+        /// <summary>플레어 발사 요청 (RTOS → HAL)</summary>
+        public bool FlareFireRequest { get; set; }
+
+        /// <summary>채프 발사 요청 (RTOS → HAL)</summary>
+        public bool ChaffFireRequest { get; set; }
+
+        /// <summary>플레어 남은 개수</summary>
+        public int FlareCount { get; set; }
+
+        /// <summary>채프 남은 개수</summary>
+        public int ChaffCount { get; set; }
+
+        /// <summary>플레어 쿨다운 중 여부</summary>
+        public bool FlareCooldownActive { get; set; }
+
+        /// <summary>채프 쿨다운 중 여부</summary>
+        public bool ChaffCooldownActive { get; set; }
+
+        /// <summary>자동 대응 모드 활성화</summary>
+        public bool AutoCountermeasureEnabled { get; set; }
+
+        // =====================================================================
         // 생성자
         // =====================================================================
 
@@ -275,6 +356,29 @@ namespace RTOScope.Runtime.Aircraft
             CollisionRisk = 0f;
             AvoidanceVector = Vector3.zero;
             CollisionAvoidanceActive = false;
+
+            // Countermeasure 초기값
+            FlareCount = 30;
+            ChaffCount = 30;
+            MissileThreatDetected = false;
+            AutoCountermeasureEnabled = true;
+
+            // 엔진 온도 초기값
+            EngineTemp = 400f; // 정상 작동 온도
+            OverheatWarning = false;
+            OverheatCritical = false;
+            ThrustLimitScale = 1f; // 제한 없음
+
+            // Stores Management 초기화 (6개 하드포인트)
+            TotalHardpoints = 6;
+            HardpointWeaponType = new int[6] { 1, 1, 2, 2, 1, 1 }; // AIM-9, AIM-9, AIM-120, AIM-120, AIM-9, AIM-9
+            HardpointAmmoCount = new int[6] { 1, 1, 1, 1, 1, 1 };   // 각 1발씩
+            HardpointJammed = new bool[6];    // 모두 false
+            HardpointReady = new bool[6] { true, true, true, true, true, true };
+            MissileCount = 6;
+            WeaponReady = true;
+            WeaponJammed = false;
+            WeaponJamMessage = "";
         }
 
         /// <summary>

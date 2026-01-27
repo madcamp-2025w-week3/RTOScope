@@ -76,6 +76,9 @@ namespace RTOScope.Runtime.Bootstrap
         private HealthMonitor _healthMonitor;
         private CollisionAvoidanceTask _collisionAvoidanceTask;
         private FuelManagementTask _fuelManagementTask;
+        private CountermeasureControlTask _countermeasureControlTask;
+        private EngineHealthTask _engineHealthTask;
+        private StoresManagementTask _storesManagementTask;
 
         // =====================================================================
         // 프로퍼티
@@ -155,6 +158,9 @@ namespace RTOScope.Runtime.Bootstrap
             _healthMonitor = new HealthMonitor();
             _collisionAvoidanceTask = new CollisionAvoidanceTask();
             _fuelManagementTask = new FuelManagementTask(0.25f);
+            _countermeasureControlTask = new CountermeasureControlTask(_state);
+            _engineHealthTask = new EngineHealthTask(_state);
+            _storesManagementTask = new StoresManagementTask(_state);
 
             // -----------------------------------------------------------------
             // 4. 태스크 등록 (TCB 기반 - 우선순위, 주기, 데드라인 설정)
@@ -211,6 +217,33 @@ namespace RTOScope.Runtime.Bootstrap
                 priority: TaskPriority.Medium,
                 period: 0.25f,          // 250ms (4Hz)
                 deadline: 0.25f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // CountermeasureControlTask: 높은 우선순위, 20Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _countermeasureControlTask,
+                priority: TaskPriority.High,
+                period: 0.05f,          // 50ms (20Hz)
+                deadline: 0.05f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // EngineHealthTask: 중간 우선순위, 10Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _engineHealthTask,
+                priority: TaskPriority.Medium,
+                period: 0.1f,           // 100ms (10Hz)
+                deadline: 0.15f,        // 150ms
+                deadlineType: DeadlineType.Soft
+            );
+
+            // StoresManagementTask: 중간 우선순위, 10Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _storesManagementTask,
+                priority: TaskPriority.Medium,
+                period: 0.1f,           // 100ms (10Hz)
+                deadline: 0.15f,        // 150ms
                 deadlineType: DeadlineType.Soft
             );
 

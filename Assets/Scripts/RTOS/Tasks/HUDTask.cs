@@ -47,6 +47,12 @@ namespace RTOScope.RTOS.Tasks
         public float GForce { get; set; }         // G-Force
         public float FuelPercent { get; set; }    // 연료 (%)
 
+        // 엔진 온도
+        public float EngineTemp { get; set; }     // 온도 (°C)
+        public bool OverheatWarning { get; set; } // 과열 경고
+        public bool OverheatCritical { get; set; }// 과열 위험
+        public float ThrustLimitScale { get; set; }// 추력 제한 (0~1)
+
         // 갱신 타임스탬프
         public float LastUpdateTime { get; set; }
     }
@@ -216,7 +222,13 @@ namespace RTOScope.RTOS.Tasks
 
             _hudData.Throttle = _state.ThrottleCommand * 100f;
             _hudData.FuelPercent = _state.FuelLevel;
-            _hudData.GForce = 1.0f; // TODO: 실제 G-Force 계산
+            _hudData.GForce = _state.GForce;
+
+            // 엔진 온도 정보
+            _hudData.EngineTemp = _state.EngineTemp;
+            _hudData.OverheatWarning = _state.OverheatWarning;
+            _hudData.OverheatCritical = _state.OverheatCritical;
+            _hudData.ThrustLimitScale = _state.ThrustLimitScale;
 
             // 갱신 시간 기록 (커널에서 가상 시간을 전달받으면 더 정확)
             _hudData.LastUpdateTime = UnityEngine.Time.time;
