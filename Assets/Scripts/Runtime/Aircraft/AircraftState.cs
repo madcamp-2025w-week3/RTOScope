@@ -155,6 +155,67 @@ namespace RTOScope.Runtime.Aircraft
         public float FuelLevel { get; set; }
 
         // =====================================================================
+        // 무장/타겟 상태 (Weapon System)
+        // =====================================================================
+
+        /// <summary>락온 입력(R) 상태</summary>
+        public bool LockOnInput { get; set; }
+
+        /// <summary>브레이크락 입력(X) 상태</summary>
+        public bool BreakLockInput { get; set; }
+
+        /// <summary>발사 입력(F) 상태</summary>
+        public bool FireInput { get; set; }
+
+        /// <summary>탐지된 후보 타겟 유무</summary>
+        public bool TargetCandidateAvailable { get; set; }
+
+        /// <summary>후보 타겟 InstanceID</summary>
+        public int TargetCandidateId { get; set; }
+
+        /// <summary>후보 타겟 위치 (월드)</summary>
+        public Vector3 TargetCandidatePosition { get; set; }
+
+        /// <summary>후보 타겟 거리 (m)</summary>
+        public float TargetCandidateDistance { get; set; }
+
+        /// <summary>후보 타겟 각도 (deg, 카메라 정면 기준)</summary>
+        public float TargetCandidateAngle { get; set; }
+
+        /// <summary>락온 상태</summary>
+        public bool LockedTargetValid { get; set; }
+
+        /// <summary>락온 타겟 InstanceID</summary>
+        public int LockedTargetId { get; set; }
+
+        /// <summary>락온 타겟 위치 (월드)</summary>
+        public Vector3 LockedTargetPosition { get; set; }
+
+        /// <summary>락온 타겟 거리 (m)</summary>
+        public float LockedTargetDistance { get; set; }
+
+        /// <summary>락온 타겟 각도 (deg, 카메라 정면 기준)</summary>
+        public float LockedTargetAngle { get; set; }
+
+        /// <summary>총 하드포인트 수</summary>
+        public int TotalHardpoints { get; set; }
+
+        /// <summary>선택된 하드포인트 인덱스</summary>
+        public int SelectedHardpointIndex { get; set; }
+
+        /// <summary>미사일 보유 수</summary>
+        public int MissileCount { get; set; }
+
+        /// <summary>미사일 수명 (초)</summary>
+        public float MissileLifeTimeSeconds { get; set; }
+
+        /// <summary>발사 요청 (RTOS → HAL)</summary>
+        public bool WeaponFireRequest { get; set; }
+
+        /// <summary>발사 완료 응답 (HAL → RTOS)</summary>
+        public bool WeaponFireAck { get; set; }
+
+        // =====================================================================
         // 생성자
         // =====================================================================
 
@@ -166,6 +227,13 @@ namespace RTOScope.Runtime.Aircraft
             FuelLevel = 100f;
             AirDensity = 1.225f; // 해수면 표준 대기 밀도
             GForce = 1f;
+
+            TargetCandidateAvailable = false;
+            LockedTargetValid = false;
+            LockedTargetId = -1;
+            SelectedHardpointIndex = 0;
+            MissileCount = 0;
+            MissileLifeTimeSeconds = 8f;
         }
 
         /// <summary>
@@ -202,6 +270,24 @@ namespace RTOScope.Runtime.Aircraft
             ThrustForceCommand = Vector3.zero;
             AeroForceCommand = Vector3.zero;
             TorqueCommand = Vector3.zero;
+
+            LockOnInput = false;
+            BreakLockInput = false;
+            FireInput = false;
+            TargetCandidateAvailable = false;
+            TargetCandidateId = 0;
+            TargetCandidatePosition = Vector3.zero;
+            TargetCandidateDistance = 0f;
+            TargetCandidateAngle = 0f;
+            LockedTargetValid = false;
+            LockedTargetId = -1;
+            LockedTargetPosition = Vector3.zero;
+            LockedTargetDistance = 0f;
+            LockedTargetAngle = 0f;
+            SelectedHardpointIndex = 0;
+            WeaponFireRequest = false;
+            WeaponFireAck = false;
+            MissileLifeTimeSeconds = 8f;
         }
     }
 }

@@ -602,7 +602,7 @@ PrefabInstance:
     - target: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       propertyPath: m_Name
-      value: F-16 Variant
+      value: F-16_Inflight
       objectReference: {fileID: 0}
     - target: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
@@ -764,20 +764,20 @@ PrefabInstance:
       addedObject: {fileID: 4375718508524056828}
     - targetCorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
-      insertIndex: 32
-      addedObject: {fileID: 8507673531061052901}
-    - targetCorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
-        type: 3}
-      insertIndex: 33
+      insertIndex: 31
       addedObject: {fileID: 8744329545562563078}
     - targetCorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
+      insertIndex: 32
+      addedObject: {fileID: 1344396588022394731}
+    - targetCorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
       insertIndex: 34
-      addedObject: {fileID: 9016291987333069889}
+      addedObject: {fileID: 8507673531061052901}
     - targetCorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: 35
-      addedObject: {fileID: 1344396588022394731}
+      addedObject: {fileID: 9016291987333069889}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
