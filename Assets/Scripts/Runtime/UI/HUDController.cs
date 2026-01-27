@@ -28,6 +28,10 @@ namespace RTOScope.Runtime.UI
         [SerializeField] private PlayerControllerX playerControllerX;
         [SerializeField] private FlightActuator flightActuator;
 
+        [Header("HUD Anchor")]
+        [SerializeField] private bool lockHUDToCockpit = true;
+        [SerializeField] private Transform cockpitAnchor;
+
         [Header("HUD Text")]
         [SerializeField] private TMP_Text spdText;
         [SerializeField] private TMP_Text altText;
@@ -51,6 +55,11 @@ namespace RTOScope.Runtime.UI
 
         private float _nextUpdateTime;
         private bool _warnedMissingRefs;
+        private Canvas _canvas;
+        private Transform _canvasTransform;
+        private Vector3 _initialLocalPosition;
+        private Quaternion _initialLocalRotation;
+        private bool _anchorInitialized;
 
         private void Awake()
         {
@@ -78,6 +87,16 @@ namespace RTOScope.Runtime.UI
             if (aircraftTransform == null || aircraftRigidbody == null || playerControllerX == null || flightActuator == null)
             {
                 AutoAssignReferences();
+            }
+
+            if (_canvas == null)
+            {
+                TryConfigureCanvas();
+            }
+
+            if (lockHUDToCockpit)
+            {
+                UpdateHUDAnchor();
             }
 
             UpdateHUDText();
@@ -121,13 +140,66 @@ namespace RTOScope.Runtime.UI
 
         private void TryConfigureCanvas()
         {
-            if (cockpitCamera == null) return;
-
             var canvas = GetComponentInParent<Canvas>();
             if (canvas == null) return;
 
+            _canvas = canvas;
+            _canvasTransform = canvas.transform;
+
+            if (lockHUDToCockpit)
+            {
+                canvas.renderMode = RenderMode.WorldSpace;
+                if (cockpitCamera != null)
+                    canvas.worldCamera = cockpitCamera;
+
+                InitializeCockpitAnchor();
+                return;
+            }
+
+            if (cockpitCamera == null) return;
+
             canvas.renderMode = RenderMode.ScreenSpaceCamera;
             canvas.worldCamera = cockpitCamera;
+        }
+
+        private void InitializeCockpitAnchor()
+        {
+            if (_anchorInitialized) return;
+            if (_canvasTransform == null) return;
+
+            if (cockpitAnchor == null)
+            {
+                if (cockpitCamera != null && cockpitCamera.transform.parent != null)
+                    cockpitAnchor = cockpitCamera.transform.parent;
+                else if (aircraftTransform != null)
+                    cockpitAnchor = aircraftTransform;
+            }
+
+            if (cockpitAnchor == null) return;
+
+            _initialLocalPosition = cockpitAnchor.InverseTransformPoint(_canvasTransform.position);
+            _initialLocalRotation = Quaternion.Inverse(cockpitAnchor.rotation) * _canvasTransform.rotation;
+            _anchorInitialized = true;
+        }
+
+        private void UpdateHUDAnchor()
+        {
+            if (!lockHUDToCockpit) return;
+
+            if (_canvasTransform == null)
+            {
+                TryConfigureCanvas();
+            }
+
+            if (!_anchorInitialized)
+            {
+                InitializeCockpitAnchor();
+            }
+
+            if (!_anchorInitialized || cockpitAnchor == null) return;
+
+            _canvasTransform.position = cockpitAnchor.TransformPoint(_initialLocalPosition);
+            _canvasTransform.rotation = cockpitAnchor.rotation * _initialLocalRotation;
         }
 
         private void WarnIfMissingReferences()
@@ -145,8 +217,11 @@ namespace RTOScope.Runtime.UI
             if (playerControllerX == null && aircraftRigidbody == null)
                 Debug.LogWarning("[HUDController] PlayerControllerX와 Rigidbody가 모두 비어있습니다. 속도 대체값이 0으로 표시됩니다.");
 
-            if (cockpitCamera == null)
+            if (!lockHUDToCockpit && cockpitCamera == null)
                 Debug.LogWarning("[HUDController] cockpitCamera가 비어있습니다. Canvas Render Camera를 수동으로 지정하세요.");
+
+            if (lockHUDToCockpit && cockpitAnchor == null)
+                Debug.LogWarning("[HUDController] cockpitAnchor is null. HUD anchor may drift.");
 
             _warnedMissingRefs = true;
         }
