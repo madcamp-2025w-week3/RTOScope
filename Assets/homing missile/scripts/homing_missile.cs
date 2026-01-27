@@ -5,7 +5,7 @@ namespace HomingMissile
 {
 public class homing_missile : MonoBehaviour
 {
-    public int speed = 60;
+    public int speed = 200;
     public int downspeed = 30;
     public int damage = 35;
     public bool fully_active = false;
@@ -20,12 +20,24 @@ public class homing_missile : MonoBehaviour
     public Vector3 sleepposition;
     public GameObject targetpointer;
     public float turnSpeed = 0.035f;
+    public Transform launchPoint;
+    public Vector3 inheritedVelocity = Vector3.zero;
+    public Vector3 launchForward = Vector3.forward;
+    public Vector3 launchUp = Vector3.up;
+    public float launchYawOffset = 0f;
+    public float maxSpeed = 850f;
+    public float acceleration = 80f;
+    public float activationDelaySeconds = 0.4f;
+    public float burstDelaySeconds = 0.8f;
+    public float lifetimeSeconds = 8f;
     public AudioSource launch_sound;
     public AudioSource thrust_sound;
     public GameObject smoke_obj;
     public ParticleSystem smoke;
     public GameObject smoke_position;
     public GameObject destroy_effect;
+    private float timeAliveSeconds;
+    private bool smokeSpawned;
     private void Start()
     {
         projectilerb = this.GetComponent<Rigidbody>();
@@ -37,20 +49,34 @@ public class homing_missile : MonoBehaviour
     public void setmissile()
     {
         timealive = 0;
-        transform.rotation = shooter.transform.rotation;
-        transform.Rotate(0, 90, 0);
-        transform.position = shooter.transform.position;
+        timeAliveSeconds = 0f;
+        smokeSpawned = false;
+        Transform source = launchPoint != null ? launchPoint : (shooter != null ? shooter.transform : transform);
+        Vector3 forward = launchForward.sqrMagnitude > 0.001f ? launchForward : source.forward;
+        Vector3 up = launchUp.sqrMagnitude > 0.001f ? launchUp : source.up;
+        transform.rotation = Quaternion.LookRotation(forward, up) * Quaternion.Euler(0f, launchYawOffset, 0f);
+        transform.position = source.position;
+    }
+    public void SetInheritedVelocity(Vector3 velocity)
+    {
+        inheritedVelocity = velocity;
+    }
+    public void SetLifeTimeSeconds(float seconds)
+    {
+        lifetimeSeconds = Mathf.Max(0.1f, seconds);
     }
     public void DestroyMe()
     {
         isactive = false;
         fully_active = false;
         timealive = 0;
+        timeAliveSeconds = 0f;
         smoke.transform.SetParent(null);
         smoke.Pause();
         smoke.transform.position =sleepposition;
         smoke.Play();
         projectilerb.velocity = Vector3.zero;
+        inheritedVelocity = Vector3.zero;
         thrust_sound.Pause();
         call_destroy_effects();
         transform.position = sleepposition;
@@ -68,57 +94,69 @@ public class homing_missile : MonoBehaviour
     {
         if (isactive)
         {
-            if (other.gameObject.CompareTag("Player"))
-            {
-                if (other.gameObject == shooter)
-                {
-                    if (fully_active)
-                    {
-                    //damege the shooter;
-                    DestroyMe();
-                    }
-                }
-                else
-                {
-                    //damage the enemy;
-                    DestroyMe();
-                }
-            }
+            if (shooter != null && other.transform.root == shooter.transform.root)
+                return;
+            if (other.transform.root == transform.root)
+                return;
+            DestroyMe();
         }
     }
     void FixedUpdate()
     {
         if (isactive)
         {
-            if (!target.activeInHierarchy)
+            if (target == null || !target.activeInHierarchy)
             {
                 DestroyMe();
+                return;
             }
-            if (timealive == timebeforeactivition)
+
+            timeAliveSeconds += Time.fixedDeltaTime;
+
+            float activationDelay = activationDelaySeconds > 0f
+                ? activationDelaySeconds
+                : timebeforeactivition * Time.fixedDeltaTime;
+            float burstDelay = burstDelaySeconds > 0f
+                ? burstDelaySeconds
+                : timebeforebursting * Time.fixedDeltaTime;
+            float lifeLimit = lifetimeSeconds > 0f
+                ? lifetimeSeconds
+                : timebeforedestruction * Time.fixedDeltaTime;
+
+            if (!fully_active && timeAliveSeconds >= activationDelay)
             {
                 fully_active = true;
                 thrust_sound.Play();
             }
-            timealive++;
-            if (timealive < timebeforebursting)
+
+            if (timeAliveSeconds < burstDelay)
             {
-                projectilerb.velocity = transform.up * -1 * downspeed;
+                projectilerb.velocity = inheritedVelocity + (transform.up * -1 * downspeed);
+                return;
             }
-            if (timealive == timebeforebursting)
+
+            if (!smokeSpawned)
             {
-                smoke=(Instantiate(smoke_obj,smoke_position.transform.position,smoke_position.transform.rotation)).GetComponent<ParticleSystem>();
+                smoke = (Instantiate(smoke_obj, smoke_position.transform.position, smoke_position.transform.rotation)).GetComponent<ParticleSystem>();
                 smoke.Play();
                 smoke.transform.SetParent(this.transform);
+                smokeSpawned = true;
             }
-            if (timealive == timebeforedestruction)
+
+            if (timeAliveSeconds >= lifeLimit)
             {
                 DestroyMe();
+                return;
             }
-            if (timealive >= timebeforebursting && timealive < timebeforedestruction)
-            {
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetpointer.transform.rotation, turnSpeed);
-                projectilerb.velocity = transform.forward * speed;
-            }
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetpointer.transform.rotation, turnSpeed);
+
+            Vector3 forward = transform.forward;
+            Vector3 currentVelocity = projectilerb.velocity;
+            float forwardSpeed = Vector3.Dot(currentVelocity, forward);
+            float desiredForward = Mathf.Min(maxSpeed, forwardSpeed + acceleration * Time.fixedDeltaTime);
+            Vector3 lateral = currentVelocity - forward * forwardSpeed;
+            projectilerb.velocity = (forward * desiredForward) + lateral;
         }
     }
 }

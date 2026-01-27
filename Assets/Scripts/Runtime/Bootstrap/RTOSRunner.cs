@@ -1,4 +1,4 @@
-/*
+﻿/*
  * RTOSRunner.cs - RTOS 부트스트랩 및 실행기 (하트비트)
  * 
  * [역할] Unity와 RTOS 커널 사이의 브릿지
@@ -49,6 +49,8 @@ namespace RTOScope.Runtime.Bootstrap
 
         [Tooltip("항공기 뷰 (시각화)")]
         [SerializeField] private AircraftView _view;
+        [SerializeField] private WeaponActuator _weaponActuator;
+        [SerializeField] private TargetingSensor _targetingSensor;
 
         [Header("RTOS 설정")]
         [Tooltip("자동 시작 여부")]
@@ -69,6 +71,7 @@ namespace RTOScope.Runtime.Bootstrap
 
         // 태스크 인스턴스
         private FlightControlTask _flightControlTask;
+        private WeaponControlTask _weaponControlTask;
         private RadarTask _radarTask;
         private HealthMonitor _healthMonitor;
 
@@ -145,6 +148,7 @@ namespace RTOScope.Runtime.Bootstrap
             // 3. 태스크 생성
             // -----------------------------------------------------------------
             _flightControlTask = new FlightControlTask();
+            _weaponControlTask = new WeaponControlTask();
             _radarTask = new RadarTask();
             _healthMonitor = new HealthMonitor();
 
@@ -159,6 +163,15 @@ namespace RTOScope.Runtime.Bootstrap
                 period: 0.01f,          // 10ms (100Hz)
                 deadline: 0.01f,
                 deadlineType: DeadlineType.Hard
+            );
+
+            // WeaponControlTask: 높은 우선순위, 50Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _weaponControlTask,
+                priority: TaskPriority.High,
+                period: 0.02f,          // 20ms (50Hz)
+                deadline: 0.02f,
+                deadlineType: DeadlineType.Soft
             );
 
             // RadarTask: 높은 우선순위, 20Hz, Soft Deadline
@@ -205,10 +218,29 @@ namespace RTOScope.Runtime.Bootstrap
                 _view.State = _state;
             }
 
+            if (_weaponActuator != null)
+            {
+                _weaponActuator.State = _state;
+            }
+            else
+            {
+                Debug.LogWarning("[RTOSRunner] WeaponActuator가 할당되지 않았습니다.");
+            }
+
+            if (_targetingSensor != null)
+            {
+                _targetingSensor.State = _state;
+            }
+            else
+            {
+                Debug.LogWarning("[RTOSRunner] TargetingSensor가 할당되지 않았습니다.");
+            }
+
             // -----------------------------------------------------------------
             // 6. RTOS 태스크에 AircraftState 연결
             // -----------------------------------------------------------------
             _flightControlTask.SetState(_state);
+            _weaponControlTask.SetState(_state);
 
             // -----------------------------------------------------------------
             // 7. 초기 비행 상태 설정 (비행 중 시작)
@@ -237,12 +269,11 @@ namespace RTOScope.Runtime.Bootstrap
         {
             if (_kernel == null) return;
 
-            // 커널이 모든 태스크 초기화 수행
             _kernel.Start();
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 시작됨");
+                Debug.Log("[RTOSRunner] RTOS 시작");
             }
         }
 
@@ -253,7 +284,7 @@ namespace RTOScope.Runtime.Bootstrap
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 정지됨");
+                Debug.Log("[RTOSRunner] RTOS 정지");
             }
         }
 
@@ -279,6 +310,10 @@ namespace RTOScope.Runtime.Bootstrap
                     _sensor = _aircraftTransform.GetComponent<SensorArray>();
                 if (_view == null)
                     _view = _aircraftTransform.GetComponent<AircraftView>();
+                if (_weaponActuator == null)
+                    _weaponActuator = _aircraftTransform.GetComponent<WeaponActuator>();
+                if (_targetingSensor == null)
+                    _targetingSensor = _aircraftTransform.GetComponent<TargetingSensor>();
             }
         }
 #endif

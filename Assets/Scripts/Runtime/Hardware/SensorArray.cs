@@ -229,6 +229,13 @@ namespace RTOScope.Runtime.Hardware
                 throttleChange = -1.0f * Time.deltaTime; // 초당 100% 감소
 
             State.ThrottleInput = Mathf.Clamp(State.ThrottleInput + throttleChange, 0f, 1f);
+
+            // -----------------------------------------------------------------
+            // 무장 입력 (락온/브레이크락/발사)
+            // -----------------------------------------------------------------
+            State.LockOnInput = Input.GetKey(KeyCode.R);
+            State.BreakLockInput = Input.GetKey(KeyCode.X);
+            State.FireInput = Input.GetKey(KeyCode.F);
         }
 
         // =====================================================================
