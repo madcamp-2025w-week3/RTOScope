@@ -30,6 +30,7 @@ public class homing_missile : MonoBehaviour
     public float activationDelaySeconds = 0.4f;
     public float burstDelaySeconds = 0.8f;
     public float lifetimeSeconds = 8f;
+    public float proximityFuseRadius = 8f;
     public AudioSource launch_sound;
     public AudioSource thrust_sound;
     public GameObject smoke_obj;
@@ -149,7 +150,39 @@ public class homing_missile : MonoBehaviour
                 return;
             }
 
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetpointer.transform.rotation, turnSpeed);
+            if (proximityFuseRadius > 0f)
+            {
+                float sqrDist = (target.transform.position - transform.position).sqrMagnitude;
+                if (sqrDist <= proximityFuseRadius * proximityFuseRadius)
+                {
+                    DestroyMe();
+                    return;
+                }
+            }
+
+            Quaternion desiredRotation = transform.rotation;
+            bool hasPointerRotation = false;
+            if (targetpointer != null && targetpointer.activeInHierarchy)
+            {
+                homing_missile_pointer pointer = targetpointer.GetComponent<homing_missile_pointer>();
+                if (pointer != null && pointer.target != null)
+                {
+                    desiredRotation = targetpointer.transform.rotation;
+                    hasPointerRotation = true;
+                }
+            }
+
+            if (!hasPointerRotation && target != null)
+            {
+                Vector3 toTarget = target.transform.position - transform.position;
+                if (toTarget.sqrMagnitude > 0.0001f)
+                {
+                    Vector3 up = launchUp.sqrMagnitude > 0.001f ? launchUp : transform.up;
+                    desiredRotation = Quaternion.LookRotation(toTarget.normalized, up);
+                }
+            }
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, desiredRotation, turnSpeed);
 
             Vector3 forward = transform.forward;
             Vector3 currentVelocity = projectilerb.velocity;

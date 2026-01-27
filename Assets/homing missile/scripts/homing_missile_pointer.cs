@@ -8,6 +8,7 @@ public class homing_missile_pointer : MonoBehaviour
    public GameObject target;
    private void FixedUpdate()
     {
+        if (target == null) return;
         transform.LookAt(target.transform.position);
    }
 }

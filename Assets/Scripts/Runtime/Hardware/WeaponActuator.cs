@@ -1,10 +1,10 @@
-/*
+﻿/*
  * WeaponActuator.cs - 무장 발사 액추에이터 (HAL 출력 레이어)
  *
  * [역할]
- * - RTOS의 무장 명령을 받아 미사일 프리팹을 생성/발사
+ * - RTOS의 발사 명령을 받아 미사일 프리팹을 생성/발사
  * - 하드포인트 위치/방향에서 발사
- * - 기체 속도 상속 적용
+ * - 항공기 속도 상속 적용
  */
 
 using HomingMissile;
@@ -51,6 +51,7 @@ namespace RTOScope.Runtime.Hardware
         private void Start()
         {
             TryInitializeState();
+            LogMissilePrefabInfo();
         }
 
         private void FixedUpdate()
@@ -70,6 +71,24 @@ namespace RTOScope.Runtime.Hardware
             _stateInitialized = true;
         }
 
+        private void LogMissilePrefabInfo()
+        {
+            if (!_log) return;
+
+            if (_missilePrefab == null)
+            {
+                Log("[WeaponActuator] 미사일 프리팹이 할당되지 않았습니다.");
+                return;
+            }
+
+            homing_missile root = _missilePrefab.GetComponent<homing_missile>();
+            homing_missile child = _missilePrefab.GetComponentInChildren<homing_missile>(true);
+
+            string rootState = root != null ? "있음" : "없음";
+            string childState = child != null ? "있음" : "없음";
+            Log($"[WeaponActuator] 미사일 프리팹 확인: {_missilePrefab.name}, 루트 컴포넌트 {rootState}, 자식 포함 {childState}");
+        }
+
         private void ProcessFireRequest()
         {
             if (!State.WeaponFireRequest)
@@ -79,8 +98,7 @@ namespace RTOScope.Runtime.Hardware
 
             if (_missilePrefab == null || _hardpoints == null || _hardpoints.Length == 0)
             {
-                if (_log)
-                    Debug.LogWarning("[WeaponActuator] 미사일 프리팹 또는 하드포인트가 없습니다.");
+                Log("[WeaponActuator] 미사일 프리팹 또는 하드포인트가 없습니다.");
                 State.WeaponFireRequest = false;
                 return;
             }
@@ -89,24 +107,32 @@ namespace RTOScope.Runtime.Hardware
             Transform launchPoint = _hardpoints[index];
             if (launchPoint == null)
             {
-                if (_log)
-                    Debug.LogWarning("[WeaponActuator] 하드포인트 Transform이 비어있습니다.");
+                Log("[WeaponActuator] 하드포인트 Transform이 비어있습니다.");
                 State.WeaponFireRequest = false;
                 return;
             }
 
             Transform targetTransform = null;
-            if (_targetingSensor != null)
+            bool hasLock = State.LockedTargetValid;
+            if (hasLock && _targetingSensor != null)
             {
                 _targetingSensor.TryGetLockedTarget(out targetTransform);
+            }
+            if (hasLock)
+            {
+                Log("[WeaponActuator] 락온 상태로 발사");
             }
 
             GameObject missileObj = Instantiate(_missilePrefab, launchPoint.position, launchPoint.rotation);
             homing_missile missile = missileObj.GetComponent<homing_missile>();
             if (missile == null)
             {
-                if (_log)
-                    Debug.LogWarning("[WeaponActuator] homing_missile 컴포넌트를 찾을 수 없습니다.");
+                missile = missileObj.GetComponentInChildren<homing_missile>(true);
+            }
+            if (missile == null)
+            {
+                string prefabName = _missilePrefab != null ? _missilePrefab.name : "(null)";
+                Log($"[WeaponActuator] homing_missile 컴포넌트를 찾을 수 없습니다. 미사일 프리팹 확인 필요: {prefabName}");
                 Destroy(missileObj);
                 State.WeaponFireRequest = false;
                 return;
@@ -122,18 +148,34 @@ namespace RTOScope.Runtime.Hardware
             Vector3 launchUp = _aircraftRoot != null ? _aircraftRoot.up : launchPoint.up;
 
             GameObject targetObject = null;
-            if (targetTransform != null)
+            if (hasLock && targetTransform != null)
             {
                 targetObject = targetTransform.gameObject;
+                Log($"[WeaponActuator] 타겟 참조 전달: {targetObject.name}, 거리 {State.LockedTargetDistance:F1}m, 각도 {State.LockedTargetAngle:F1}°");
+            }
+            else if (hasLock && targetTransform == null)
+            {
+                Vector3 fallbackPos = State.LockedTargetPosition != Vector3.zero
+                    ? State.LockedTargetPosition
+                    : launchPoint.position + launchPoint.forward * 5000f;
+
+                GameObject dummy = new GameObject("Missile_LockFallback");
+                dummy.transform.position = fallbackPos;
+                dummy.transform.rotation = launchPoint.rotation;
+                dummy.transform.SetParent(missileObj.transform, true);
+                targetObject = dummy;
+
+                Log("[WeaponActuator] 타겟 참조 전달(대체): Transform 없음, 위치 기반으로 고정");
             }
             else
             {
-                // 락온이 없으면 전방으로 직진하도록 더미 타겟 생성
                 GameObject dummy = new GameObject("Missile_DumbTarget");
                 dummy.transform.position = launchPoint.position + launchPoint.forward * 5000f;
                 dummy.transform.rotation = launchPoint.rotation;
                 dummy.transform.SetParent(missileObj.transform, true);
                 targetObject = dummy;
+
+                Log("[WeaponActuator] 락온 없음: 정면 직진 발사");
             }
 
             missile.target = targetObject;
@@ -191,6 +233,12 @@ namespace RTOScope.Runtime.Hardware
             {
                 SetLayerRecursively(child.gameObject, layer);
             }
+        }
+
+        private void Log(string message)
+        {
+            if (!_log) return;
+            Debug.Log(message);
         }
     }
 }

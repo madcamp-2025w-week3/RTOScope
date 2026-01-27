@@ -794,11 +794,11 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2102583145640791998}
+      addedObject: {fileID: 3922178019327956}
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3922178019327956}
+      addedObject: {fileID: 2102583145640791998}
   m_SourcePrefab: {fileID: 100100000, guid: c8c018869460c4f4d824fc3dbe0f3f68, type: 3}
 --- !u!4 &4120547360615620658 stripped
 Transform:
@@ -863,27 +863,6 @@ MonoBehaviour:
   _rudder: {fileID: 0}
   _engineTrail: {fileID: 0}
   _controlSurfaceMaxAngle: 30
---- !u!114 &2102583145640791998
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4380764110321735051}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 023fc14b85b6b4449bd170852108691e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxSpeed: 200
-  minSpeed: 25
-  acceleration: 20
-  pitchSpeed: 50
-  rollSpeed: 50
-  yawSpeed: 20
-  invertPitch: 1
-  currentSpeed: 0
-  targetThrottle: 0
 --- !u!114 &3922178019327956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -923,6 +902,27 @@ MonoBehaviour:
   disableBehaviours: []
   autoCollectParts: 1
   parts: []
+--- !u!114 &2102583145640791998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4380764110321735051}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 023fc14b85b6b4449bd170852108691e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxSpeed: 200
+  minSpeed: 25
+  acceleration: 20
+  pitchSpeed: 50
+  rollSpeed: 50
+  yawSpeed: 20
+  invertPitch: 1
+  currentSpeed: 0
+  targetThrottle: 0
 --- !u!4 &5216947693860840497 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 6058291721749942166, guid: c8c018869460c4f4d824fc3dbe0f3f68,

@@ -1,9 +1,9 @@
-/*
- * WeaponControlTask.cs - 무장 제어 태스크 (RTOS)
+﻿/*
+ * WeaponControlTask.cs - 무장 제어 시스템 (RTOS)
  *
  * [역할]
  * - 락온/브레이크락/발사 로직 (Unity API 금지)
- * - 타겟 후보를 바탕으로 수동 락온 수행
+ * - 타겟 후보를 기반으로 수동 락온 수행
  * - 발사 명령을 HAL(WeaponActuator)로 전달
  *
  * [상태 머신 단계]
@@ -45,8 +45,8 @@ namespace RTOScope.RTOS.Tasks
 
         private const float MAX_RANGE = 3000f;
         private const float LOCK_FOV = 40f;  // 전체 각도
-        private const float BREAK_FOV = 60f; // 전체 각도
-        private const float BREAK_GRACE_TIME = 0.6f; // FOV 이탈 허용 시간
+        private const float BREAK_FOV = 100f; // 전체 각도 (추적 유지 강화)
+        private const float BREAK_GRACE_TIME = 1.2f; // FOV 이탈 허용 시간 (추적 유지 강화)
         private const float MISSILE_LIFETIME = 8f; // 5~10초 권장
 
         private const float DELTA_TIME = 0.02f; // 50Hz 기준
@@ -65,6 +65,8 @@ namespace RTOScope.RTOS.Tasks
         private float _outOfFovTimer;
         private int _nextHardpointIndex;
         private bool _pendingFire;
+
+        private bool _log = true;
 
         // =====================================================================
         // 프로퍼티
@@ -148,7 +150,7 @@ namespace RTOScope.RTOS.Tasks
 
         public void OnDeadlineMiss()
         {
-            // Soft/Hard 정책에 따라 확장 가능
+            // Soft/Hard 마감에 따라 확장 가능
         }
 
         // =====================================================================
@@ -160,19 +162,36 @@ namespace RTOScope.RTOS.Tasks
             if (_state == null) return;
 
             bool lockPressed = IsRisingEdge(_state.LockOnInput, ref _prevLockInput);
+            if (!lockPressed) return;
 
-            if (lockPressed && _state.TargetCandidateAvailable)
+            Log("[WeaponControlTask] R 입력 수신");
+
+            if (!_state.TargetCandidateAvailable)
             {
-                if (_state.TargetCandidateDistance <= MAX_RANGE &&
-                    _state.TargetCandidateAngle <= LOCK_FOV * 0.5f)
-                {
-                    _state.LockedTargetValid = true;
-                    _state.LockedTargetId = _state.TargetCandidateId;
-                    _state.LockedTargetPosition = _state.TargetCandidatePosition;
-                    _state.LockedTargetDistance = _state.TargetCandidateDistance;
-                    _state.LockedTargetAngle = _state.TargetCandidateAngle;
-                    _outOfFovTimer = 0f;
-                }
+                Log("[WeaponControlTask] 락온 실패: 타겟 후보 없음");
+                return;
+            }
+
+            float distance = _state.TargetCandidateDistance;
+            float angle = _state.TargetCandidateAngle;
+
+            bool inRange = distance <= MAX_RANGE;
+            bool inFov = angle <= LOCK_FOV * 0.5f;
+
+            if (inRange && inFov)
+            {
+                _state.LockedTargetValid = true;
+                _state.LockedTargetId = _state.TargetCandidateId;
+                _state.LockedTargetPosition = _state.TargetCandidatePosition;
+                _state.LockedTargetDistance = _state.TargetCandidateDistance;
+                _state.LockedTargetAngle = _state.TargetCandidateAngle;
+                _outOfFovTimer = 0f;
+
+                Log($"[WeaponControlTask] 락온 성공: 거리 {distance:F1}m, 각도 {angle:F1}°");
+            }
+            else
+            {
+                Log($"[WeaponControlTask] 락온 실패: 거리 {distance:F1}m, 각도 {angle:F1}° (조건: {MAX_RANGE:F0}m, {LOCK_FOV * 0.5f:F1}°)");
             }
         }
 
@@ -210,7 +229,7 @@ namespace RTOScope.RTOS.Tasks
             bool breakPressed = IsRisingEdge(_state.BreakLockInput, ref _prevBreakInput);
             if (breakPressed)
             {
-                BreakLock();
+                BreakLock("브레이크락 입력");
                 return;
             }
 
@@ -218,7 +237,7 @@ namespace RTOScope.RTOS.Tasks
             {
                 if (_state.LockedTargetDistance > MAX_RANGE || _state.LockedTargetDistance == float.MaxValue)
                 {
-                    BreakLock();
+                    BreakLock("사거리 초과");
                     return;
                 }
 
@@ -233,7 +252,7 @@ namespace RTOScope.RTOS.Tasks
 
                 if (_outOfFovTimer >= BREAK_GRACE_TIME)
                 {
-                    BreakLock();
+                    BreakLock($"FOV 이탈 ({_state.LockedTargetAngle:F1}°)");
                     return;
                 }
             }
@@ -246,7 +265,7 @@ namespace RTOScope.RTOS.Tasks
             }
         }
 
-        private void BreakLock()
+        private void BreakLock(string reason)
         {
             _state.LockedTargetValid = false;
             _state.LockedTargetId = -1;
@@ -254,6 +273,8 @@ namespace RTOScope.RTOS.Tasks
             _state.LockedTargetAngle = 0f;
             _outOfFovTimer = 0f;
             _state.WeaponFireRequest = false;
+
+            Log($"[WeaponControlTask] 락온 해제: {reason}");
         }
 
         private static bool IsRisingEdge(bool current, ref bool previous)
@@ -261,6 +282,12 @@ namespace RTOScope.RTOS.Tasks
             bool rising = current && !previous;
             previous = current;
             return rising;
+        }
+
+        private void Log(string message)
+        {
+            if (!_log) return;
+            Debug.Log(message);
         }
     }
 }
