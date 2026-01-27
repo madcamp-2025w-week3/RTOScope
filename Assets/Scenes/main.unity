@@ -154,19 +154,24 @@ PrefabInstance:
       objectReference: {fileID: 1600020515}
     - target: {fileID: 2297929491242348616, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
-      propertyPath: pixelsPerUnit
-      value: 0.05
+      propertyPath: flightActuator
+      value: 
+      objectReference: {fileID: 1600020519}
+    - target: {fileID: 1523384078973227312, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: speedMultiplier
+      value: 1.94384
       objectReference: {fileID: 0}
-    - target: {fileID: 2297929491242348616, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+    - target: {fileID: 1523384078973227312, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: aircraftTransform
       value: 
-      objectReference: {fileID: 1600020515}
+      objectReference: {fileID: 0}
     - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: m_Camera
       value: 
-      objectReference: {fileID: 316696774}
+      objectReference: {fileID: 0}
     - target: {fileID: 2968157049793982122, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: m_Name
@@ -279,7 +284,7 @@ PrefabInstance:
       objectReference: {fileID: 1600020515}
     - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
-      propertyPath: cockpitCamera
+      propertyPath: aircraftTransform
       value: 
       objectReference: {fileID: 316696774}
     m_RemovedComponents:
@@ -700,6 +705,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: MediumPolyMountain
+      objectReference: {fileID: 0}
+    - target: {fileID: 3851948558441065806, guid: 24ea780ba7d2df545b98b986a24f75ea,
+        type: 3}
+      propertyPath: m_Layer
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1163,6 +1173,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: cameraSwitchController
+      value: 
+      objectReference: {fileID: 2124688413}
     - target: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
         type: 3}
       propertyPath: m_Name
@@ -1231,7 +1245,7 @@ SceneRoots:
   - {fileID: 2102358725}
   - {fileID: 1086817653}
   - {fileID: 2865804877657978896}
+  - {fileID: 548885689}
   - {fileID: 1201857610}
   - {fileID: 1806461692}
   - {fileID: 1631140152}
-  - {fileID: 548885689}

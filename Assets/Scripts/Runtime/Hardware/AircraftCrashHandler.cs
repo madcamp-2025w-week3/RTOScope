@@ -1,5 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using RTOScope.Runtime.Aircraft;
 
 namespace RTOScope.Runtime.Hardware
 {
@@ -24,6 +27,20 @@ namespace RTOScope.Runtime.Hardware
         [SerializeField] private float explosionLifetime = 2f;
         [SerializeField] private float debrisLifetime = 12f;
 
+        [Header("Camera")]
+        [SerializeField] private CameraSwitchController cameraSwitchController;
+        [SerializeField] private bool forceExternalCameraOnCrash = true;
+        [SerializeField] private Camera mainCamera;
+        [SerializeField] private Camera cockpitCamera;
+
+        [Header("Game Over")]
+        [SerializeField] private float gameOverDelay = 5f;
+        [SerializeField] private GameObject gameOverRoot;
+        [SerializeField] private TMP_Text deadText;
+        [SerializeField] private TMP_Text gameOverText;
+        [SerializeField] private string deadMessage = "DEAD";
+        [SerializeField] private string gameOverMessage = "GAME OVER";
+
         [Header("Disable On Crash")]
         [SerializeField] private bool disableAircraftPhysics = true;
         [SerializeField] private Behaviour[] disableBehaviours;
@@ -40,6 +57,18 @@ namespace RTOScope.Runtime.Hardware
                 aircraftRigidbody = GetComponent<Rigidbody>();
             if (partsRoot == null)
                 partsRoot = transform;
+            if (cameraSwitchController == null)
+                cameraSwitchController = FindObjectOfType<CameraSwitchController>();
+            if (mainCamera == null)
+            {
+                var mainGo = GameObject.Find("Main Camera");
+                if (mainGo != null) mainCamera = mainGo.GetComponent<Camera>();
+            }
+            if (cockpitCamera == null)
+            {
+                var cockpitGo = GameObject.Find("Cockpit Camera");
+                if (cockpitGo != null) cockpitCamera = cockpitGo.GetComponent<Camera>();
+            }
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -92,6 +121,22 @@ namespace RTOScope.Runtime.Hardware
             }
 
             BreakApart(hitPoint);
+
+            if (forceExternalCameraOnCrash && cameraSwitchController != null)
+                cameraSwitchController.ForceExternalView();
+
+            if (forceExternalCameraOnCrash && mainCamera != null && cockpitCamera != null)
+            {
+                mainCamera.enabled = true;
+                cockpitCamera.enabled = false;
+                if (mainCamera.TryGetComponent(out AudioListener mainAudio))
+                    mainAudio.enabled = true;
+                if (cockpitCamera.TryGetComponent(out AudioListener cockpitAudio))
+                    cockpitAudio.enabled = false;
+            }
+
+            if (gameOverRoot != null)
+                StartCoroutine(ShowGameOverAfterDelay());
         }
 
         private void BreakApart(Vector3 explosionCenter)
@@ -127,6 +172,15 @@ namespace RTOScope.Runtime.Hardware
                 rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f, ForceMode.Impulse);
                 Destroy(part.gameObject, debrisLifetime);
             }
+        }
+
+        private IEnumerator ShowGameOverAfterDelay()
+        {
+            yield return new WaitForSeconds(gameOverDelay);
+
+            if (deadText != null) deadText.text = deadMessage;
+            if (gameOverText != null) gameOverText.text = gameOverMessage;
+            gameOverRoot.SetActive(true);
         }
     }
 }

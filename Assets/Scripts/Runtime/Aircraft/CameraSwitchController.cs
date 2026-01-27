@@ -26,6 +26,11 @@ namespace RTOScope.Runtime.Aircraft {
             SetCockpitView(isCockpitView);
         }
 
+        public void ForceExternalView() {
+            isCockpitView = false;
+            SetCockpitView(false);
+        }
+
         private void SetCockpitView(bool cockpit) {
             mainCamera.enabled = !cockpit;
             cockpitCamera.enabled = cockpit;
