@@ -21,6 +21,7 @@ namespace RTOScope.Runtime.UI
     /// <summary>
     /// HUD 숫자 텍스트 업데이트 컨트롤러
     /// </summary>
+    [ExecuteAlways]
     public class HUDController : MonoBehaviour
     {
         [Header("References")]

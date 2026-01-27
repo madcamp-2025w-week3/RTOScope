@@ -297,10 +297,30 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 316696774}
+    - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_RenderMode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_PlaneDistance
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_UpdateRectTransformForStandalone
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2968157049793982122, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: m_Name
       value: HUD
+      objectReference: {fileID: 0}
+    - target: {fileID: 2968157049793982122, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
@@ -409,6 +429,11 @@ PrefabInstance:
       objectReference: {fileID: 1600020515}
     - target: {fileID: 7485344185745316604, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
+      propertyPath: m_MatchWidthOrHeight
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 7485344185745316604, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
       propertyPath: m_ReferenceResolution.x
       value: 350
       objectReference: {fileID: 0}
@@ -417,6 +442,11 @@ PrefabInstance:
       propertyPath: m_ReferenceResolution.y
       value: 500
       objectReference: {fileID: 0}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: rtosRunner
+      value: 
+      objectReference: {fileID: 1201857609}
     - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: missileCount
@@ -437,6 +467,11 @@ PrefabInstance:
       propertyPath: flightActuator
       value: 
       objectReference: {fileID: 1600020519}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: lockHUDToCockpit
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: aircraftRigidbody
