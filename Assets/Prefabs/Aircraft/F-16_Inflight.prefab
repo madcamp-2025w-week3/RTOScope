@@ -399,7 +399,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.3
-  far clip plane: 5000
+  far clip plane: 10000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -483,6 +483,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cockpit: {fileID: 4375718508524056828}
+  aircraftRigidbody: {fileID: 5573290755752883497}
+  maxYawOffset: 10
+  maxPitchOffset: 6
+  yawRateToOffset: 0.15
+  rollRateToOffset: 0.08
+  pitchRateToOffset: 0.08
+  lookResponse: 6
+  lookRateThreshold: 5
+  useRollRate: 1
+  useYawRate: 1
+  usePitchRate: 1
+  invertLook: 1
+  invertPitchLook: 1
 --- !u!1001 &423849253632118490
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -573,6 +586,10 @@ PrefabInstance:
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 4316169062011309043}
+    - targetCorrespondingSourceObject: {fileID: 4132189453905247782, guid: 345081f55d3924ed98b4cdde480f56a7,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1281170087177294380}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 345081f55d3924ed98b4cdde480f56a7, type: 3}
 --- !u!4 &4375718508524056828 stripped
@@ -794,12 +811,26 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: -1
+      addedObject: {fileID: 260557448096813902}
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5363124056106755945}
+    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+        type: 3}
+      insertIndex: -1
       addedObject: {fileID: 3922178019327956}
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: -1
       addedObject: {fileID: 2102583145640791998}
   m_SourcePrefab: {fileID: 100100000, guid: c8c018869460c4f4d824fc3dbe0f3f68, type: 3}
+--- !u!4 &205727471777425003 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2211221769439874508, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+    type: 3}
+  m_PrefabInstance: {fileID: 2050600664048216999}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &4120547360615620658 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2691513816581983125, guid: c8c018869460c4f4d824fc3dbe0f3f68,
@@ -863,6 +894,67 @@ MonoBehaviour:
   _rudder: {fileID: 0}
   _engineTrail: {fileID: 0}
   _controlSurfaceMaxAngle: 30
+--- !u!114 &260557448096813902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4380764110321735051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc8feb96f543bf44bb6d4d82668ecf26, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _targetCamera: {fileID: 1359978710154248576}
+  _selfRoot: {fileID: 5216947693860840497}
+  _maxRange: 30000
+  _lockFov: 40
+  _breakFov: 60
+  _enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  _targetTag: Target
+  _includeTriggerColliders: 1
+  _useLineOfSight: 0
+  _occlusionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _occlusionIgnoreMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _drawDebug: 0
+  _log: 1
+  _logInterval: 0.5
+--- !u!114 &5363124056106755945
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4380764110321735051}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 289d7d040cb37ae49b59431077a9ba6f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _aircraftRoot: {fileID: 5216947693860840497}
+  _aircraftRigidbody: {fileID: 5573290755752883497}
+  _targetingSensor: {fileID: 260557448096813902}
+  _hudController: {fileID: 2884921936396553691}
+  _missilePrefab: {fileID: 6573806827650273376, guid: ae0129ce5de34144cb564b2205e6be07,
+    type: 3}
+  _hardpoints:
+  - {fileID: 7461086735127851228}
+  - {fileID: 205727471777425003}
+  - {fileID: 8507673531061052901}
+  - {fileID: 8744329545562563078}
+  - {fileID: 9016291987333069889}
+  - {fileID: 1344396588022394731}
+  _initialMissileCount: 6
+  _forceMissileVisible: 1
+  _missileLayer: 0
+  _log: 1
 --- !u!114 &3922178019327956
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -935,3 +1027,238 @@ Rigidbody:
     type: 3}
   m_PrefabInstance: {fileID: 2050600664048216999}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &7461086735127851228 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8934623423933094779, guid: c8c018869460c4f4d824fc3dbe0f3f68,
+    type: 3}
+  m_PrefabInstance: {fileID: 2050600664048216999}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &5932969669897237594
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 4375718508524056828}
+    m_Modifications:
+    - target: {fileID: 1523384078973227312, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: flightActuator
+      value: 
+      objectReference: {fileID: 5788724252574900548}
+    - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_Camera
+      value: 
+      objectReference: {fileID: 1359978710154248576}
+    - target: {fileID: 2968157049793982122, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_Name
+      value: HUD
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907131164962188352, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: aircraftTransform
+      value: 
+      objectReference: {fileID: 5216947693860840497}
+    - target: {fileID: 7306323139161815401, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: targetCamera
+      value: 
+      objectReference: {fileID: 1359978710154248576}
+    - target: {fileID: 7485344185745316604, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_ReferenceResolution.x
+      value: 350
+      objectReference: {fileID: 0}
+    - target: {fileID: 7485344185745316604, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_ReferenceResolution.y
+      value: 500
+      objectReference: {fileID: 0}
+    - target: {fileID: 8244155212866460000, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 9d2224f968e484665973b0051fb766e2,
+        type: 3}
+    - target: {fileID: 8471265552185621361, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_fontSize
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8471265552185621361, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: m_fontSizeBase
+      value: 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: distText
+      value: 
+      objectReference: {fileID: 2871571806767206187}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: missileCount
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: cockpitAnchor
+      value: 
+      objectReference: {fileID: 4375718508524056828}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: cockpitCamera
+      value: 
+      objectReference: {fileID: 1359978710154248576}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: flightActuator
+      value: 
+      objectReference: {fileID: 5788724252574900548}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: aircraftRigidbody
+      value: 
+      objectReference: {fileID: 5573290755752883497}
+    - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: aircraftTransform
+      value: 
+      objectReference: {fileID: 5216947693860840497}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a2a03fc18a8c04565b4adc923c51e1cd, type: 3}
+--- !u!224 &1281170087177294380 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 4868818988855666294, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+    type: 3}
+  m_PrefabInstance: {fileID: 5932969669897237594}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2871571806767206187 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8471265552185621361, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+    type: 3}
+  m_PrefabInstance: {fileID: 5932969669897237594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &2884921936396553691 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+    type: 3}
+  m_PrefabInstance: {fileID: 5932969669897237594}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad733de5b1203404592bf388ad0ba67a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
