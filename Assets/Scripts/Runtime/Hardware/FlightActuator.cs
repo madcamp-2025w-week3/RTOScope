@@ -114,8 +114,10 @@ namespace RTOScope.Runtime.Hardware
             // -----------------------------------------------------------------
             // 1. 추력 적용 (기체 전방 방향)
             // ThrustForceCommand: Vector3(0, 0, thrust) in local space
+            // ThrustLimitScale: 과열로 인한 추력 제한 (0~1)
             // -----------------------------------------------------------------
-            _rigidbody.AddRelativeForce(State.ThrustForceCommand, ForceMode.Force);
+            Vector3 thrustCommand = State.ThrustForceCommand * State.ThrustLimitScale;
+            _rigidbody.AddRelativeForce(thrustCommand, ForceMode.Force);
 
             // -----------------------------------------------------------------
             // 2. 공기역학력 적용 (양력 + 항력)
@@ -193,15 +195,20 @@ namespace RTOScope.Runtime.Hardware
             if (!_showDebugInfo || State == null) return;
 
             // 조종석 HUD 정보 표시
-            int boxHeight = 200; // 높이 증가
+            int boxHeight = 220; // 높이 증가 (온도 추가)
             GUI.Box(new Rect(20, 20, 320, boxHeight), "RTOS FLIGHT SYSTEM v2.1");
 
             int y = 45;
             int lineHeight = 18;
 
-            // 스로틀 및 속도
+            // 스로틀 및 속도 (과열 시 실효 스로틀 표시)
+            int thrInput = (int)(State.ThrottleCommand * 100);
+            int thrEffective = (int)(State.ThrottleCommand * State.ThrustLimitScale * 100);
+            string thrStr = State.ThrustLimitScale < 1f
+                ? $"THR: {thrInput}% → {thrEffective}%"
+                : $"THR: {thrInput}%";
             GUI.Label(new Rect(30, y, 300, lineHeight),
-                $"THR: {(int)(State.ThrottleCommand * 100)}%  |  SPD: {(int)_currentSpeed} m/s");
+                $"{thrStr}  |  SPD: {(int)_currentSpeed} m/s");
             y += lineHeight;
 
             // 고도 및 수직속도
@@ -239,6 +246,21 @@ namespace RTOScope.Runtime.Hardware
             float thrust = State.ThrustForceCommand.z;
             GUI.Label(new Rect(30, y, 300, lineHeight),
                 $"Thrust: {thrust / 1000f:F1} kN  |  Lift: {State.LiftForce / 1000f:F1} kN");
+            y += lineHeight;
+
+            // 엔진 온도 (과열 시 색상 변경)
+            Color prevColor = GUI.color;
+            if (State.OverheatCritical)
+                GUI.color = Color.red;
+            else if (State.OverheatWarning)
+                GUI.color = Color.yellow;
+
+            string tempStr = $"EGT: {State.EngineTemp:F0}°C";
+            if (State.ThrustLimitScale < 1f)
+                tempStr += $"  |  Limit: {State.ThrustLimitScale:P0}";
+            GUI.Label(new Rect(30, y, 300, lineHeight), tempStr);
+
+            GUI.color = prevColor;
         }
     }
 }
