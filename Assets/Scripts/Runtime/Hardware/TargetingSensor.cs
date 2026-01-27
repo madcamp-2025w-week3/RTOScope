@@ -25,7 +25,7 @@ namespace RTOScope.Runtime.Hardware
 
         [Header("Detection Settings")]
         [Tooltip("최대 탐지 거리 (m)")]
-        [SerializeField] private float _maxRange = 3000f;
+        [SerializeField] private float _maxRange = 5000f;
 
         [Tooltip("락온 후보 FOV (deg, 전체 각도)")]
         [SerializeField] private float _lockFov = 40f;

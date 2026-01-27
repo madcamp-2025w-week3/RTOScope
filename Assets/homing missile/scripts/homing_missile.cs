@@ -43,7 +43,7 @@ namespace HomingMissile
 
         public float activationDelaySeconds = 0.4f;
         public float burstDelaySeconds = 0.8f;
-        public float lifetimeSeconds = 8f;
+        public float lifetimeSeconds = 16f;
 
         // --- Guidance / fuse ---
         public bool homingEnabled = true; // WeaponActuator에서 락온 여부로 세팅
