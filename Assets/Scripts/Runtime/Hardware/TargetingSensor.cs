@@ -1,13 +1,13 @@
-/*
+﻿/*
  * TargetingSensor.cs - 타겟 탐지 센서 (HAL 입력 레이어)
  *
  * [역할]
  * - 카메라 FOV/거리 기반으로 타겟 후보 탐지
- * - Enemy 레이어 또는 Target 태그만 탐지
- * - RTOS에서 사용할 후보/락온 정보 계산 후 AircraftState에 기록
+ * - Enemy 레이어 또는 Target 태그만 후보로 인정
+ * - RTOS에서 사용하는 타겟 후보/락온 정보를 AircraftState에 기록
  *
  * [주의]
- * - Unity API 사용 가능 (HAL 레이어)
+ * - Unity API 사용은 HAL 레이어에서만 수행
  * - RTOS Task에서는 Unity API 호출 금지
  */
 
@@ -39,17 +39,35 @@ namespace RTOScope.Runtime.Hardware
         [Tooltip("Target 태그 (선택)")]
         [SerializeField] private string _targetTag = "Target";
 
+        [Header("Trigger 포함 여부")]
+        [SerializeField] private bool _includeTriggerColliders = true;
+
+        [Header("Line of Sight (Optional)")]
+        [SerializeField] private bool _useLineOfSight = false;
+        [SerializeField] private LayerMask _occlusionMask = ~0;
+        [SerializeField] private LayerMask _occlusionIgnoreMask;
+
         [Header("Debug")]
         [SerializeField] private bool _drawDebug = false;
+        [SerializeField] private bool _log = true;
+        [SerializeField] private float _logInterval = 0.5f;
 
         public AircraftState State { get; set; }
 
         private readonly Dictionary<int, Transform> _candidateMap = new Dictionary<int, Transform>();
+        private readonly Dictionary<int, Transform> _knownTargets = new Dictionary<int, Transform>();
         private Transform _lastCandidate;
         private int _lastCandidateId = -1;
+        private Vector3 _lastCandidatePosition;
+        private float _lastCandidateDistance;
+        private float _lastCandidateAngle;
+
+        private int _lastLoggedCandidateId = -1;
+        private float _lastDetectLogTime;
 
         private int _lockedIdCache = -1;
         private Transform _lockedTransform;
+        private Transform _selfRootRoot;
 
         private void Awake()
         {
@@ -66,6 +84,17 @@ namespace RTOScope.Runtime.Hardware
             {
                 _selfRoot = transform;
             }
+
+            _selfRootRoot = _selfRoot != null ? _selfRoot.root : null;
+
+            if (_occlusionIgnoreMask.value == 0)
+            {
+                int groundLayer = LayerMask.NameToLayer("Ground");
+                if (groundLayer >= 0)
+                {
+                    _occlusionIgnoreMask = 1 << groundLayer;
+                }
+            }
         }
 
         private void FixedUpdate()
@@ -74,6 +103,7 @@ namespace RTOScope.Runtime.Hardware
 
             UpdateCandidates();
             UpdateLockedInfo();
+            CleanupKnownTargets();
         }
 
         public bool TryGetLockedTarget(out Transform target)
@@ -84,9 +114,14 @@ namespace RTOScope.Runtime.Hardware
                 return false;
             }
 
-            if (_lockedTransform == null && _candidateMap.TryGetValue(State.LockedTargetId, out Transform t))
+            if (_lockedTransform == null && _knownTargets.TryGetValue(State.LockedTargetId, out Transform t))
             {
                 _lockedTransform = t;
+            }
+
+            if (_lockedTransform == null && _candidateMap.TryGetValue(State.LockedTargetId, out Transform c))
+            {
+                _lockedTransform = c;
             }
 
             target = _lockedTransform;
@@ -102,7 +137,10 @@ namespace RTOScope.Runtime.Hardware
             Vector3 camPos = _targetCamera.transform.position;
             Vector3 camForward = _targetCamera.transform.forward;
 
-            Collider[] hits = Physics.OverlapSphere(camPos, _maxRange, ~0, QueryTriggerInteraction.Ignore);
+            QueryTriggerInteraction triggerMode = _includeTriggerColliders
+                ? QueryTriggerInteraction.Collide
+                : QueryTriggerInteraction.Ignore;
+            Collider[] hits = Physics.OverlapSphere(camPos, _maxRange, ~0, triggerMode);
 
             float bestScore = float.MaxValue;
             float halfFov = _lockFov * 0.5f;
@@ -110,39 +148,55 @@ namespace RTOScope.Runtime.Hardware
             foreach (Collider hit in hits)
             {
                 if (hit == null) continue;
-                Transform t = hit.transform;
-                if (!IsValidTarget(t)) continue;
 
-                int id = t.gameObject.GetInstanceID();
-                if (!_candidateMap.ContainsKey(id))
-                {
-                    _candidateMap.Add(id, t);
-                }
+                Transform candidate = ResolveTargetTransform(hit.transform);
+                if (candidate == null) continue;
 
-                Vector3 toTarget = t.position - camPos;
+                Vector3 targetPos = GetTargetPosition(candidate, hit);
+                Vector3 toTarget = targetPos - camPos;
                 float distance = toTarget.magnitude;
-                if (distance < 0.001f) continue;
+                if (distance < 0.001f || distance > _maxRange) continue;
 
                 float angle = Vector3.Angle(camForward, toTarget);
                 if (angle > halfFov) continue;
+
+                if (_useLineOfSight && !HasLineOfSight(camPos, targetPos, candidate, distance))
+                {
+                    continue;
+                }
+
+                int id = candidate.gameObject.GetInstanceID();
+                if (!_candidateMap.ContainsKey(id))
+                {
+                    _candidateMap.Add(id, candidate);
+                }
+
+                if (!_knownTargets.ContainsKey(id))
+                {
+                    _knownTargets.Add(id, candidate);
+                }
 
                 float score = angle + distance * 0.001f;
                 if (score < bestScore)
                 {
                     bestScore = score;
-                    _lastCandidate = t;
+                    _lastCandidate = candidate;
                     _lastCandidateId = id;
+                    _lastCandidatePosition = targetPos;
+                    _lastCandidateDistance = distance;
+                    _lastCandidateAngle = angle;
                 }
             }
 
             if (_lastCandidate != null)
             {
-                Vector3 toTarget = _lastCandidate.position - camPos;
                 State.TargetCandidateAvailable = true;
                 State.TargetCandidateId = _lastCandidateId;
-                State.TargetCandidatePosition = _lastCandidate.position;
-                State.TargetCandidateDistance = toTarget.magnitude;
-                State.TargetCandidateAngle = Vector3.Angle(camForward, toTarget);
+                State.TargetCandidatePosition = _lastCandidatePosition;
+                State.TargetCandidateDistance = _lastCandidateDistance;
+                State.TargetCandidateAngle = _lastCandidateAngle;
+
+                LogTargetDetected();
             }
             else
             {
@@ -158,7 +212,7 @@ namespace RTOScope.Runtime.Hardware
                 Debug.DrawRay(camPos, camForward * 100f, Color.cyan);
                 if (_lastCandidate != null)
                 {
-                    Debug.DrawLine(camPos, _lastCandidate.position, Color.green);
+                    Debug.DrawLine(camPos, _lastCandidatePosition, Color.green);
                 }
             }
         }
@@ -179,10 +233,11 @@ namespace RTOScope.Runtime.Hardware
             {
                 _lockedIdCache = State.LockedTargetId;
                 _lockedTransform = null;
-                if (_candidateMap.TryGetValue(_lockedIdCache, out Transform t))
-                {
-                    _lockedTransform = t;
-                }
+            }
+
+            if (_lockedTransform == null && _knownTargets.TryGetValue(State.LockedTargetId, out Transform known))
+            {
+                _lockedTransform = known;
             }
 
             if (_lockedTransform == null && _candidateMap.TryGetValue(State.LockedTargetId, out Transform fallback))
@@ -214,17 +269,93 @@ namespace RTOScope.Runtime.Hardware
             }
         }
 
-        private bool IsValidTarget(Transform t)
+        private void LogTargetDetected()
+        {
+            if (!_log || _lastCandidate == null) return;
+
+            bool shouldLog = _lastCandidateId != _lastLoggedCandidateId ||
+                             Time.time - _lastDetectLogTime >= _logInterval;
+
+            if (!shouldLog) return;
+
+            _lastLoggedCandidateId = _lastCandidateId;
+            _lastDetectLogTime = Time.time;
+
+            Debug.Log($"[TargetingSensor] 타겟 감지: {_lastCandidate.name}, 거리 {_lastCandidateDistance:F1}m, 각도 {_lastCandidateAngle:F1}°");
+        }
+
+        private Transform ResolveTargetTransform(Transform t)
+        {
+            if (t == null) return null;
+
+            Transform candidate = null;
+            if (IsTagOrLayerMatch(t))
+                candidate = t;
+            else if (t.root != null && IsTagOrLayerMatch(t.root))
+                candidate = t.root;
+
+            if (candidate == null) return null;
+
+            if (_selfRootRoot != null && candidate.root == _selfRootRoot)
+                return null;
+
+            return candidate;
+        }
+
+        private bool IsTagOrLayerMatch(Transform t)
         {
             if (t == null) return false;
-            if (_selfRoot != null && t.root == _selfRoot) return false;
 
             bool isEnemyLayer = (_enemyLayerMask.value & (1 << t.gameObject.layer)) != 0;
             bool isTargetTag = !string.IsNullOrEmpty(_targetTag) && t.CompareTag(_targetTag);
 
-            if (!isEnemyLayer && !isTargetTag) return false;
+            return isEnemyLayer || isTargetTag;
+        }
+
+        private Vector3 GetTargetPosition(Transform target, Collider hit)
+        {
+            if (hit != null)
+                return hit.bounds.center;
+
+            return target.position;
+        }
+
+        private bool HasLineOfSight(Vector3 camPos, Vector3 targetPos, Transform target, float distance)
+        {
+            Vector3 dir = (targetPos - camPos).normalized;
+            int mask = _occlusionMask.value & ~_occlusionIgnoreMask.value;
+
+            if (Physics.Raycast(camPos, dir, out RaycastHit hit, distance, mask, QueryTriggerInteraction.Ignore))
+            {
+                Transform hitRoot = hit.transform != null ? hit.transform.root : null;
+                return hit.transform == target || hitRoot == target;
+            }
 
             return true;
+        }
+
+        private void CleanupKnownTargets()
+        {
+            if (_knownTargets.Count == 0) return;
+
+            List<int> removeKeys = null;
+            foreach (KeyValuePair<int, Transform> pair in _knownTargets)
+            {
+                if (pair.Value != null) continue;
+
+                if (removeKeys == null)
+                {
+                    removeKeys = new List<int>();
+                }
+                removeKeys.Add(pair.Key);
+            }
+
+            if (removeKeys == null) return;
+
+            foreach (int key in removeKeys)
+            {
+                _knownTargets.Remove(key);
+            }
         }
     }
 }
