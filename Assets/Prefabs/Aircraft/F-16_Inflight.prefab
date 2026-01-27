@@ -912,8 +912,8 @@ MonoBehaviour:
   cameraSwitchController: {fileID: 0}
   forceExternalCameraOnCrash: 1
   mainCamera: {fileID: 0}
-  cockpitCamera: {fileID: 0}
-  gameOverDelay: 5
+  cockpitCamera: {fileID: 1359978710154248576}
+  gameOverDelay: 2
   gameOverRoot: {fileID: 0}
   deadText: {fileID: 0}
   gameOverText: {fileID: 0}
