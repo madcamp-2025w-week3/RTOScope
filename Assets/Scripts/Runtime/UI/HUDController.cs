@@ -1,4 +1,4 @@
-/*
+﻿/*
  * HUDController.cs - HUD 텍스트 업데이트 컨트롤러
  *
  * [역할] HUD 배경 이미지 위에 텍스트를 갱신
@@ -65,6 +65,12 @@ namespace RTOScope.Runtime.UI
             {
                 if (Time.time < _nextUpdateTime) return;
                 _nextUpdateTime = Time.time + updateIntervalSeconds;
+            }
+
+            // 참조가 파괴됐을 수 있으니 필요 시 재할당
+            if (aircraftTransform == null || aircraftRigidbody == null || playerControllerX == null || flightActuator == null)
+            {
+                AutoAssignReferences();
             }
 
             UpdateHUDText();
@@ -142,36 +148,41 @@ namespace RTOScope.Runtime.UI
         {
             if (aircraftTransform == null) return;
 
-            float speedValue = GetSpeedValue() * speedDisplayMultiplier;
-            int speedInt = Mathf.RoundToInt(speedValue);
-
-            float altFeet = aircraftTransform.position.y * 3.28084f;
-            int altInt = Mathf.RoundToInt(altFeet);
-
-            int headingInt = NormalizeHeadingToInt(aircraftTransform.eulerAngles.y);
-
-            if (spdText != null)
+            try
             {
-                spdText.text = speedInt.ToString();
+                float speedValue = GetSpeedValue() * speedDisplayMultiplier;
+                int speedInt = Mathf.RoundToInt(speedValue);
+
+                float altFeet = aircraftTransform.position.y * 3.28084f;
+                int altInt = Mathf.RoundToInt(altFeet);
+
+                int headingInt = NormalizeHeadingToInt(aircraftTransform.eulerAngles.y);
+
+                if (spdText != null)
+                {
+                    spdText.text = speedInt.ToString();
+                }
+
+                if (altText != null)
+                {
+                    altText.text = altInt.ToString();
+                }
+
+                if (hdgText != null)
+                {
+                    string headingText = padHeadingTo3Digits ? headingInt.ToString("000") : headingInt.ToString();
+                    hdgText.text = headingText;
+                }
+
+                if (mslText != null)
+                {
+                    int count = Mathf.Max(0, missileCount);
+                    mslText.text = count.ToString();
+                }
             }
-
-            if (altText != null)
+            catch (MissingReferenceException)
             {
-                altText.text = altInt.ToString();
-                // 축약 옵션 예시: 12.5k
-                // altText.text = showAltLabel ? $"{altLabel} {altFeet / 1000f:0.0}k" : $"{altFeet / 1000f:0.0}k";
-            }
-
-            if (hdgText != null)
-            {
-                string headingText = padHeadingTo3Digits ? headingInt.ToString("000") : headingInt.ToString();
-                hdgText.text = headingText;
-            }
-
-            if (mslText != null)
-            {
-                int count = Mathf.Max(0, missileCount);
-                mslText.text = count.ToString();
+                AutoAssignReferences();
             }
         }
 
