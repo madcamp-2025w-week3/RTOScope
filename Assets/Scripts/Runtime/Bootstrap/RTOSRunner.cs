@@ -74,6 +74,8 @@ namespace RTOScope.Runtime.Bootstrap
         private WeaponControlTask _weaponControlTask;
         private RadarTask _radarTask;
         private HealthMonitor _healthMonitor;
+        private CollisionAvoidanceTask _collisionAvoidanceTask;
+        private FuelManagementTask _fuelManagementTask;
 
         // =====================================================================
         // 프로퍼티
@@ -151,6 +153,8 @@ namespace RTOScope.Runtime.Bootstrap
             _weaponControlTask = new WeaponControlTask();
             _radarTask = new RadarTask();
             _healthMonitor = new HealthMonitor();
+            _collisionAvoidanceTask = new CollisionAvoidanceTask();
+            _fuelManagementTask = new FuelManagementTask(0.25f);
 
             // -----------------------------------------------------------------
             // 4. 태스크 등록 (TCB 기반 - 우선순위, 주기, 데드라인 설정)
@@ -189,6 +193,24 @@ namespace RTOScope.Runtime.Bootstrap
                 priority: TaskPriority.Medium,
                 period: 0.1f,           // 100ms (10Hz)
                 deadline: 0.1f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // CollisionAvoidanceTask: 높은 우선순위, 33Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _collisionAvoidanceTask,
+                priority: TaskPriority.High,
+                period: 0.03f,          // 30ms (~33Hz)
+                deadline: 0.03f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // FuelManagementTask: 중간 우선순위, 4Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _fuelManagementTask,
+                priority: TaskPriority.Medium,
+                period: 0.25f,          // 250ms (4Hz)
+                deadline: 0.25f,
                 deadlineType: DeadlineType.Soft
             );
 
@@ -241,6 +263,8 @@ namespace RTOScope.Runtime.Bootstrap
             // -----------------------------------------------------------------
             _flightControlTask.SetState(_state);
             _weaponControlTask.SetState(_state);
+            _collisionAvoidanceTask.SetState(_state);
+            _fuelManagementTask.SetState(_state);
 
             // -----------------------------------------------------------------
             // 7. 초기 비행 상태 설정 (비행 중 시작)
@@ -259,7 +283,7 @@ namespace RTOScope.Runtime.Bootstrap
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 3개 태스크 등록됨 (+ IdleTask)");
+                Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 5개 태스크 등록됨 (+ IdleTask)");
                 Debug.Log($"[RTOSRunner] FixedUpdate 사용: {_useFixedUpdate}, Fixed Timestep: {Time.fixedDeltaTime * 1000f:F1}ms");
             }
         }

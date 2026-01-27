@@ -154,6 +154,31 @@ namespace RTOScope.Runtime.Aircraft
         /// <summary>연료량 (%)</summary>
         public float FuelLevel { get; set; }
 
+        /// <summary>연료 소모율 (%/s)</summary>
+        public float FuelConsumptionRate { get; set; }
+
+        /// <summary>연료 부족 경고</summary>
+        public bool FuelLowWarning { get; set; }
+
+        /// <summary>연료 임계 경고</summary>
+        public bool FuelCriticalWarning { get; set; }
+
+        /// <summary>스로틀 제한 (0~1, 연료 보호용)</summary>
+        public float ThrottleLimit { get; set; }
+
+        // =====================================================================
+        // 충돌 회피 (Collision Avoidance)
+        // =====================================================================
+
+        /// <summary>충돌 위험도 (0~1)</summary>
+        public float CollisionRisk { get; set; }
+
+        /// <summary>회피 벡터 (월드 좌표)</summary>
+        public Vector3 AvoidanceVector { get; set; }
+
+        /// <summary>회피 동작 활성 상태</summary>
+        public bool CollisionAvoidanceActive { get; set; }
+
         // =====================================================================
         // 무장/타겟 상태 (Weapon System)
         // =====================================================================
@@ -225,6 +250,10 @@ namespace RTOScope.Runtime.Aircraft
             ThrottleInput = 0.5f;
             ThrottleCommand = 0.5f;
             FuelLevel = 100f;
+            FuelConsumptionRate = 0f;
+            FuelLowWarning = false;
+            FuelCriticalWarning = false;
+            ThrottleLimit = 1f;
             AirDensity = 1.225f; // 해수면 표준 대기 밀도
             GForce = 1f;
 
@@ -234,6 +263,10 @@ namespace RTOScope.Runtime.Aircraft
             SelectedHardpointIndex = 0;
             MissileCount = 0;
             MissileLifeTimeSeconds = 8f;
+
+            CollisionRisk = 0f;
+            AvoidanceVector = Vector3.zero;
+            CollisionAvoidanceActive = false;
         }
 
         /// <summary>

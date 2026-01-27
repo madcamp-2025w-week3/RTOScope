@@ -319,6 +319,8 @@ namespace RTOScope.RTOS.Tasks
             _rollInput = _state.RollInput;
             _yawInput = _state.YawInput;
             _throttleInput = _state.ThrottleInput;
+            float throttleLimit = _state.ThrottleLimit > 0f ? _state.ThrottleLimit : 1f;
+            _throttleInput = Mathf.Min(_throttleInput, Mathf.Clamp01(throttleLimit));
 
             float smoothPitch = 1f - Mathf.Exp(-PITCH_INPUT_RESPONSE * DELTA_TIME);
             float smooth = 1f - Mathf.Exp(-INPUT_RESPONSE * DELTA_TIME);

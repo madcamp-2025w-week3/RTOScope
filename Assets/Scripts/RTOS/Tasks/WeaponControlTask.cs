@@ -187,7 +187,8 @@ namespace RTOScope.RTOS.Tasks
                 _state.LockedTargetAngle = _state.TargetCandidateAngle;
                 _outOfFovTimer = 0f;
 
-                Log($"[WeaponControlTask] 락온 성공: 거리 {distance:F1}m, 각도 {angle:F1}°");
+                Vector3 pos = _state.LockedTargetPosition;
+                Log($"[WeaponControlTask] 락온 성공: 거리 {distance:F1}m, 각도 {angle:F1}°, 위치 ({pos.x:F1}, {pos.y:F1}, {pos.z:F1})");
             }
             else
             {
