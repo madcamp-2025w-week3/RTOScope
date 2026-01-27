@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!29 &1
 OcclusionCullingSettings:
@@ -523,67 +523,67 @@ PrefabInstance:
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 50
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 50
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 50
+      value: 25
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: -834
+      value: -157
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 2831
+      value: 1598
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 5737
+      value: 2209
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: -0.05341617
+      value: -0.07385233
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.108194254
+      value: -0.09542074
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.92322606
+      value: -0.9773128
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.36482102
+      value: 0.17407027
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 43.25
+      value: 20.753
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: -181.549
+      value: -186.825
       objectReference: {fileID: 0}
     - target: {fileID: 6200563027332330295, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 12.754
+      value: 9.902
       objectReference: {fileID: 0}
     - target: {fileID: 6721344903887989133, guid: 4110e152e2f96414ca52d0c4203d9c1b,
         type: 3}
@@ -1590,4 +1590,4 @@ SceneRoots:
   - {fileID: 1201857610}
   - {fileID: 1806461692}
   - {fileID: 472574724}
-
+  - {fileID: 1164742368}
