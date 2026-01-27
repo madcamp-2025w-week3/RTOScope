@@ -798,10 +798,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
         type: 3}
       insertIndex: -1
-      addedObject: {fileID: 6341622121811740189}
-    - targetCorrespondingSourceObject: {fileID: 2359512164567875116, guid: c8c018869460c4f4d824fc3dbe0f3f68,
-        type: 3}
-      insertIndex: -1
       addedObject: {fileID: 3922178019327956}
   m_SourcePrefab: {fileID: 100100000, guid: c8c018869460c4f4d824fc3dbe0f3f68, type: 3}
 --- !u!4 &4120547360615620658 stripped
@@ -888,45 +884,6 @@ MonoBehaviour:
   invertPitch: 1
   currentSpeed: 0
   targetThrottle: 0
---- !u!114 &6341622121811740189
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4380764110321735051}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4343a550ee391491384b321f751d3792, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  aircraftRigidbody: {fileID: 5573290755752883497}
-  partsRoot: {fileID: 5216947693860840497}
-  groundLayers:
-    serializedVersion: 2
-    m_Bits: 64
-  crashSpeedThreshold: 20
-  explosionPrefab: {fileID: 1121192042590650, guid: e1b08032bec16ba4eb1ae23cbd572664,
-    type: 3}
-  firePrefab: {fileID: 1478314613700728, guid: be6847dd39ab95f4daa2ed98e4f90564, type: 3}
-  explosionForce: 1500
-  explosionRadius: 12
-  explosionLifetime: 2
-  debrisLifetime: 12
-  cameraSwitchController: {fileID: 0}
-  forceExternalCameraOnCrash: 1
-  mainCamera: {fileID: 0}
-  cockpitCamera: {fileID: 0}
-  gameOverDelay: 5
-  gameOverRoot: {fileID: 0}
-  deadText: {fileID: 0}
-  gameOverText: {fileID: 0}
-  deadMessage: DEAD
-  gameOverMessage: GAME OVER
-  disableAircraftPhysics: 1
-  disableBehaviours: []
-  autoCollectParts: 1
-  parts: []
 --- !u!114 &3922178019327956
 MonoBehaviour:
   m_ObjectHideFlags: 0
