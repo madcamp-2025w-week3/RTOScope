@@ -64,6 +64,17 @@ namespace RTOScope.Runtime.UI
         [Tooltip("거리 단위 (m 또는 km)")]
         [SerializeField] private bool useKilometers = false;
 
+        [Header("Lock-on Audio")]
+        [Tooltip("락온 가능 범위(WeaponControlTask MAX_RANGE와 동일하게 설정 권장)")]
+        [SerializeField] private float lockonRangeMeters = 3000f;
+        [Tooltip("센서/락온 판정 깜빡임 방지용 유지 시간(초)")]
+        [SerializeField] private float lockonAudioGraceSeconds = 0.2f;
+        [SerializeField] private AudioSource lockonLoopSource;
+        [SerializeField] private AudioClip enemyTraceLoopClip;
+        [SerializeField] private AudioClip lockonLoopClip;
+        [SerializeField] private AudioSource lockonVoiceSource;
+        [SerializeField] private AudioClip targetLockedVoiceClip;
+
         private float _nextUpdateTime;
         private bool _warnedMissingRefs;
         private Canvas _canvas;
@@ -72,12 +83,41 @@ namespace RTOScope.Runtime.UI
         private Quaternion _initialLocalRotation;
         private bool _anchorInitialized;
         private AircraftState _aircraftState;
+        private float _lastCandidateTime;
+        private float _lastLockTime;
+        private bool _hadCandidate;
+        private bool _hadLock;
+
+        private enum LockonAudioState
+        {
+            None,
+            InRange,
+            Locked
+        }
+
+        private LockonAudioState _lockonAudioState;
 
         private void Awake()
         {
             AutoAssignReferences();
             TryConfigureCanvas();
             WarnIfMissingReferences();
+
+            _lastCandidateTime = -999f;
+            _lastLockTime = -999f;
+            _hadCandidate = false;
+            _hadLock = false;
+            _lockonAudioState = LockonAudioState.None;
+
+            if (lockonLoopSource != null)
+            {
+                lockonLoopSource.playOnAwake = false;
+            }
+            if (lockonVoiceSource != null)
+            {
+                lockonVoiceSource.playOnAwake = false;
+                lockonVoiceSource.loop = false;
+            }
         }
 
         private void LateUpdate()
@@ -112,6 +152,7 @@ namespace RTOScope.Runtime.UI
             }
 
             UpdateHUDText();
+            UpdateLockonAudio();
         }
 
         private void AutoAssignReferences()
@@ -295,6 +336,80 @@ namespace RTOScope.Runtime.UI
             {
                 AutoAssignReferences();
             }
+        }
+
+        private void UpdateLockonAudio()
+        {
+            if (!Application.isPlaying) return;
+            if (_aircraftState == null) return;
+
+            bool candidateRaw = _aircraftState.TargetCandidateAvailable &&
+                                _aircraftState.TargetCandidateDistance > 0f &&
+                                _aircraftState.TargetCandidateDistance <= lockonRangeMeters;
+
+            bool lockedRaw = _aircraftState.LockedTargetValid;
+
+            if (candidateRaw)
+            {
+                _lastCandidateTime = Time.time;
+                _hadCandidate = true;
+            }
+
+            if (lockedRaw)
+            {
+                _lastLockTime = Time.time;
+                _hadLock = true;
+            }
+
+            float grace = Mathf.Max(0f, lockonAudioGraceSeconds);
+            bool inRange = candidateRaw || (_hadCandidate && Time.time - _lastCandidateTime <= grace);
+            bool locked = lockedRaw || (_hadLock && Time.time - _lastLockTime <= grace);
+
+            LockonAudioState nextState = locked ? LockonAudioState.Locked
+                : (inRange ? LockonAudioState.InRange : LockonAudioState.None);
+
+            if (nextState == _lockonAudioState) return;
+
+            switch (nextState)
+            {
+                case LockonAudioState.None:
+                    StopLoop(lockonLoopSource);
+                    break;
+
+                case LockonAudioState.InRange:
+                    StartLoop(lockonLoopSource, enemyTraceLoopClip);
+                    break;
+
+                case LockonAudioState.Locked:
+                    StartLoop(lockonLoopSource, lockonLoopClip);
+                    if (lockonVoiceSource != null && targetLockedVoiceClip != null)
+                        lockonVoiceSource.PlayOneShot(targetLockedVoiceClip);
+                    break;
+            }
+
+            _lockonAudioState = nextState;
+        }
+
+        private static void StartLoop(AudioSource source, AudioClip clip)
+        {
+            if (source == null || clip == null) return;
+
+            if (source.clip != clip)
+            {
+                source.clip = clip;
+                source.time = 0f;
+            }
+            source.loop = true;
+            if (!source.isPlaying)
+                source.Play();
+        }
+
+        private static void StopLoop(AudioSource source)
+        {
+            if (source == null) return;
+            if (source.isPlaying)
+                source.Stop();
+            source.clip = null;
         }
 
         /// <summary>타겟 거리 업데이트</summary>

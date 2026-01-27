@@ -43,7 +43,7 @@ namespace RTOScope.RTOS.Tasks
         // 무장 제어 상수
         // =====================================================================
 
-        private const float MAX_RANGE = 1500f;
+        private const float MAX_RANGE = 2000f;
         private const float LOCK_FOV = 40f;  // 전체 각도
         private const float BREAK_FOV = 100f; // 전체 각도 (추적 유지 강화)
         private const float BREAK_GRACE_TIME = 1.2f; // FOV 이탈 허용 시간 (추적 유지 강화)
