@@ -788,6 +788,11 @@ PrefabInstance:
       propertyPath: m_text
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 7306323139161815401, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: lockOnRange
+      value: 2000
+      objectReference: {fileID: 0}
     - target: {fileID: 7485344185745316604, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
       propertyPath: m_PresetInfoIsWorld
