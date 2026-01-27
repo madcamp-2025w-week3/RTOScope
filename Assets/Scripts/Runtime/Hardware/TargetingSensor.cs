@@ -314,9 +314,6 @@ namespace RTOScope.Runtime.Hardware
 
         private Vector3 GetTargetPosition(Transform target, Collider hit)
         {
-            if (hit != null)
-                return hit.bounds.center;
-
             return target.position;
         }
 
