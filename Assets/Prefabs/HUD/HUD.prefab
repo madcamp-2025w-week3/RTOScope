@@ -208,6 +208,7 @@ MonoBehaviour:
   padHeadingTo3Digits: 1
   updateIntervalSeconds: 0
   metersPerSecondToKnots: 1.94384
+  speedDisplayMultiplier: 1.94384
   missileCount: 2
 --- !u!1 &3676294750029615996
 GameObject:
@@ -805,7 +806,7 @@ MonoBehaviour:
   aircraftRigidbody: {fileID: 0}
   playerControllerX: {fileID: 0}
   flightActuator: {fileID: 0}
-  speedMultiplier: 1
+  speedMultiplier: 1.94384
   valueScale: 0.1
   lerpSpeed: 8
   invertDirection: 0

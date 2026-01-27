@@ -61,6 +61,13 @@ namespace RTOScope.Runtime.UI
 
         private void LateUpdate()
         {
+            if (aircraftTransform == null)
+            {
+                // Aircraft destroyed after crash; stop updating to avoid MissingReference spam.
+                enabled = false;
+                return;
+            }
+
             if (updateIntervalSeconds > 0f)
             {
                 if (Time.time < _nextUpdateTime) return;
@@ -146,7 +153,11 @@ namespace RTOScope.Runtime.UI
 
         private void UpdateHUDText()
         {
-            if (aircraftTransform == null) return;
+            if (aircraftTransform == null)
+            {
+                enabled = false;
+                return;
+            }
 
             try
             {
