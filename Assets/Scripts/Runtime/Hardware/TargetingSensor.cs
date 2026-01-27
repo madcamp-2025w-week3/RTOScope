@@ -314,6 +314,11 @@ namespace RTOScope.Runtime.Hardware
 
         private Vector3 GetTargetPosition(Transform target, Collider hit)
         {
+            // Collider의 bounds.center 사용 (시각적 중심에 더 가까움)
+            if (hit != null)
+            {
+                return hit.bounds.center;
+            }
             return target.position;
         }
 
