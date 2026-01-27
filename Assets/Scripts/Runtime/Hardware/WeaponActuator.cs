@@ -65,9 +65,17 @@ namespace RTOScope.Runtime.Hardware
         private void TryInitializeState()
         {
             if (_stateInitialized || State == null) return;
+
             State.TotalHardpoints = _hardpoints != null ? _hardpoints.Length : 0;
-            if (State.MissileCount <= 0)
+
+            // 첫 초기화 시에만 MissileCount 설정 (기존 값이 없을 때)
+            // AircraftState 생성자에서 이미 초기화되므로 여기서는 건드리지 않음
+            // 하드포인트 배열이 없으면 기본값 사용
+            if (State.HardpointAmmoCount == null || State.HardpointAmmoCount.Length == 0)
+            {
                 State.MissileCount = _initialMissileCount;
+            }
+
             _stateInitialized = true;
         }
 
@@ -192,7 +200,15 @@ namespace RTOScope.Runtime.Hardware
 
             DisableHardpointVisual(launchPoint);
 
+            // 탄약 차감: MissileCount와 HardpointAmmoCount 모두 차감
             State.MissileCount = Mathf.Max(0, State.MissileCount - 1);
+
+            // 하드포인트별 탄약도 차감 (StoresManagementTask와 동기화)
+            if (State.HardpointAmmoCount != null && index < State.HardpointAmmoCount.Length)
+            {
+                State.HardpointAmmoCount[index] = Mathf.Max(0, State.HardpointAmmoCount[index] - 1);
+            }
+
             if (_hudController != null)
             {
                 _hudController.ConsumeMissile(1);

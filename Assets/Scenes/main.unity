@@ -633,7 +633,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 289d7d040cb37ae49b59431077a9ba6f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
 --- !u!114 &1600020524 stripped
+=======
+  _aircraftRoot: {fileID: 1600020515}
+  _aircraftRigidbody: {fileID: 1600020521}
+  _targetingSensor: {fileID: 1600020524}
+  _hudController: {fileID: 0}
+  _missilePrefab: {fileID: 6573806827650273376, guid: ae0129ce5de34144cb564b2205e6be07,
+    type: 3}
+  _hardpoints:
+  - {fileID: 1406780562}
+  - {fileID: 491104350}
+  - {fileID: 1352673499}
+  - {fileID: 1804164226}
+  - {fileID: 1597127700}
+  - {fileID: 1138230340}
+  _initialMissileCount: 6
+  _forceMissileVisible: 1
+  _missileLayer: 0
+  _log: 1
+--- !u!114 &1600020524
+>>>>>>> 12e67c29eef969965e9171321b3e10364f04a5b2
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 3542327419537537098, guid: 92c1f035583aa8c488c5b216efbb0609,
     type: 3}
@@ -645,12 +666,59 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc8feb96f543bf44bb6d4d82668ecf26, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+<<<<<<< HEAD
 --- !u!82 &1600020529 stripped
 AudioSource:
   m_CorrespondingSourceObject: {fileID: 577658197208814387, guid: 92c1f035583aa8c488c5b216efbb0609,
     type: 3}
   m_PrefabInstance: {fileID: 2865804877657978896}
   m_PrefabAsset: {fileID: 0}
+=======
+  _targetCamera: {fileID: 316696774}
+  _selfRoot: {fileID: 1600020515}
+  _maxRange: 30000
+  _lockFov: 40
+  _breakFov: 60
+  _enemyLayerMask:
+    serializedVersion: 2
+    m_Bits: 8
+  _targetTag: Target
+  _includeTriggerColliders: 1
+  _useLineOfSight: 0
+  _occlusionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  _occlusionIgnoreMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _drawDebug: 0
+  _log: 1
+  _logInterval: 0.5
+--- !u!114 &1600020529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1600020516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6fbefb2deb4424981807dcfe93dcbf38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _flarePrefab: {fileID: 0}
+  _flareSpawnPoint: {fileID: 0}
+  _flareEjectSpeed: 30
+  _flareLifetime: 5
+  _chaffPrefab: {fileID: 0}
+  _chaffSpawnPoint: {fileID: 0}
+  _chaffEjectSpeed: 20
+  _chaffLifetime: 8
+  _flareSound: {fileID: 0}
+  _chaffSound: {fileID: 0}
+  _audioSource: {fileID: 0}
+  _logDeployments: 1
+>>>>>>> 12e67c29eef969965e9171321b3e10364f04a5b2
 --- !u!1001 &1672081770
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1289,9 +1357,32 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+<<<<<<< HEAD
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
+=======
+    m_RemovedGameObjects:
+    - {fileID: 8892119314143812336, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 4375718508524056828, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1236544526}
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      insertIndex: 5
+      addedObject: {fileID: 1600020524}
+    - targetCorrespondingSourceObject: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      insertIndex: 6
+      addedObject: {fileID: 1600020523}
+    - targetCorrespondingSourceObject: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1600020529}
+>>>>>>> 12e67c29eef969965e9171321b3e10364f04a5b2
   m_SourcePrefab: {fileID: 100100000, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

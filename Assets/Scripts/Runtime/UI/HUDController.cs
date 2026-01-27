@@ -279,7 +279,12 @@ namespace RTOScope.Runtime.UI
 
                 if (mslText != null)
                 {
-                    int count = Mathf.Max(0, missileCount);
+                    // AircraftState에서 미사일 개수 가져오기
+                    int count = 0;
+                    if (_aircraftState != null)
+                        count = _aircraftState.MissileCount;
+                    else
+                        count = Mathf.Max(0, missileCount);
                     mslText.text = count.ToString();
                 }
 
