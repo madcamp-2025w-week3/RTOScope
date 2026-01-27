@@ -151,6 +151,21 @@ PrefabInstance:
         type: 3}
       propertyPath: aircraftTransform
       value: 
+      objectReference: {fileID: 1600020515}
+    - target: {fileID: 2297929491242348616, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: flightActuator
+      value: 
+      objectReference: {fileID: 1600020519}
+    - target: {fileID: 1523384078973227312, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: speedMultiplier
+      value: 1.94384
+      objectReference: {fileID: 0}
+    - target: {fileID: 1523384078973227312, guid: a2a03fc18a8c04565b4adc923c51e1cd,
+        type: 3}
+      propertyPath: aircraftTransform
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 2586170940418685420, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
@@ -267,18 +282,15 @@ PrefabInstance:
       propertyPath: aircraftTransform
       value: 
       objectReference: {fileID: 1600020515}
-    - target: {fileID: 5907131164962188352, guid: a2a03fc18a8c04565b4adc923c51e1cd,
-        type: 3}
-      propertyPath: convertMetersToFeet
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 8817882371941611905, guid: a2a03fc18a8c04565b4adc923c51e1cd,
         type: 3}
-      propertyPath: cockpitCamera
+      propertyPath: aircraftTransform
       value: 
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
+      objectReference: {fileID: 316696774}
+    m_RemovedComponents:
+    - {fileID: 2297929491242348616, guid: a2a03fc18a8c04565b4adc923c51e1cd, type: 3}
+    m_RemovedGameObjects:
+    - {fileID: 4375562182459557581, guid: a2a03fc18a8c04565b4adc923c51e1cd, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a2a03fc18a8c04565b4adc923c51e1cd, type: 3}
