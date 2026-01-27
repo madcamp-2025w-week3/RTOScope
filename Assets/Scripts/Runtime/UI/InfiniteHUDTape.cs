@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using RTOScope.Runtime.Hardware;
 
 namespace RTOScope.Runtime.UI
 {
@@ -14,13 +15,27 @@ namespace RTOScope.Runtime.UI
         [SerializeField] private RawImage tapeRawImage;
         [SerializeField] private TextMeshProUGUI indicatorText;
 
+        public enum DataSourceMode
+        {
+            Manual,
+            Altitude,
+            Speed
+        }
+
         [Header("Data")]
         public float currentValue;
+        [SerializeField] private DataSourceMode dataSource = DataSourceMode.Altitude;
 
-        [Header("Data Source (Optional)")]
+        [Header("Altitude Source")]
         [SerializeField] private Transform aircraftTransform;
-        [SerializeField] private bool useAltitudeFromTransform = true;
         [SerializeField] private bool convertMetersToFeet = true;
+
+        [Header("Speed Source")]
+        [SerializeField] private Rigidbody aircraftRigidbody;
+        [SerializeField] private PlayerControllerX playerControllerX;
+        [SerializeField] private FlightActuator flightActuator;
+        [Tooltip("Speed unit conversion (e.g., 3.6 for m/s->km/h, 1.94384 for m/s->kts)")]
+        [SerializeField] private float speedMultiplier = 1f;
 
         [Header("Scrolling")]
         [Tooltip("UV shift per value unit (e.g., 0.001 = 1000 units per UV).")]
@@ -35,10 +50,28 @@ namespace RTOScope.Runtime.UI
         {
             if (tapeRawImage == null) return;
 
-            if (useAltitudeFromTransform && aircraftTransform != null)
+            if (dataSource == DataSourceMode.Altitude && aircraftTransform != null)
             {
                 float altMeters = aircraftTransform.position.y;
                 currentValue = convertMetersToFeet ? altMeters * 3.28084f : altMeters;
+            }
+            else if (dataSource == DataSourceMode.Speed)
+            {
+                float speed = 0f;
+                if (playerControllerX != null && playerControllerX.currentSpeed > 0.01f)
+                {
+                    speed = playerControllerX.currentSpeed;
+                }
+                else if (flightActuator != null && flightActuator.CurrentSpeed > 0.01f)
+                {
+                    speed = flightActuator.CurrentSpeed;
+                }
+                else if (aircraftRigidbody != null)
+                {
+                    speed = aircraftRigidbody.velocity.magnitude;
+                }
+
+                currentValue = speed * speedMultiplier;
             }
 
             float dir = invertDirection ? -1f : 1f;

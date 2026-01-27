@@ -43,6 +43,8 @@ namespace RTOScope.Runtime.UI
         [Header("Speed Fallback")]
         [Tooltip("Rigidbody.velocity.magnitude(m/s) -> knots 변환에 사용")]
         [SerializeField] private float metersPerSecondToKnots = 1.94384f;
+        [Tooltip("표시용 속도 배수 (예: m/s -> knots = 1.94384, km/h -> knots = 0.539957)")]
+        [SerializeField] private float speedDisplayMultiplier = 1.94384f;
 
         [Header("Weapons")]
         [SerializeField] public int missileCount = 2;
@@ -140,7 +142,7 @@ namespace RTOScope.Runtime.UI
         {
             if (aircraftTransform == null) return;
 
-            float speedValue = GetSpeedValue();
+            float speedValue = GetSpeedValue() * speedDisplayMultiplier;
             int speedInt = Mathf.RoundToInt(speedValue);
 
             float altFeet = aircraftTransform.position.y * 3.28084f;
