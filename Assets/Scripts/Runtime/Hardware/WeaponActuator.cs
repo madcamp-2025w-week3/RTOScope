@@ -169,15 +169,10 @@ namespace RTOScope.Runtime.Hardware
             }
             else
             {
-                GameObject dummy = new GameObject("Missile_DumbTarget");
-                dummy.transform.position = launchPoint.position + launchPoint.forward * 5000f;
-                dummy.transform.rotation = launchPoint.rotation;
-                dummy.transform.SetParent(missileObj.transform, true);
-                targetObject = dummy;
-
                 Log("[WeaponActuator] 락온 없음: 정면 직진 발사");
             }
 
+            missile.homingEnabled = hasLock;
             missile.target = targetObject;
             if (missile.targetpointer != null)
             {
