@@ -920,6 +920,102 @@ MonoBehaviour:
   _drawDebug: 0
   _log: 1
   _logInterval: 0.5
+--- !u!82 &1600020529
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1600020516}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 8300000, guid: 2fa37c60397aba94bb5a6e66b4bb5806, type: 3}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!1001 &1672081770
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1494,6 +1590,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 316696774}
     - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: explosionClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0ae26fcb13b802d4b9d76abeb7204e79, type: 3}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: engineLoopClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 2fa37c60397aba94bb5a6e66b4bb5806, type: 3}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: engineAudioSource
+      value: 
+      objectReference: {fileID: 1600020529}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: explosionAudioSource
+      value: 
+      objectReference: {fileID: 1600020529}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
       propertyPath: cameraSwitchController
       value: 
       objectReference: {fileID: 2124688413}
@@ -1562,8 +1674,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5363124056106755945, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      propertyPath: _hudController
+      value: 
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 8892119314143812336, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 4375718508524056828, guid: 92c1f035583aa8c488c5b216efbb0609,
         type: 3}
@@ -1578,6 +1696,10 @@ PrefabInstance:
         type: 3}
       insertIndex: 6
       addedObject: {fileID: 1600020523}
+    - targetCorrespondingSourceObject: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      insertIndex: 10
+      addedObject: {fileID: 1600020529}
   m_SourcePrefab: {fileID: 100100000, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
