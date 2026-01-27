@@ -154,6 +154,12 @@ namespace RTOScope.Runtime.Aircraft
         /// <summary>연료량 (%)</summary>
         public float FuelLevel { get; set; }
 
+        /// <summary>연료 탱크 용량 (L)</summary>
+        public float FuelCapacityLiters { get; set; }
+
+        /// <summary>연료 잔량 (L)</summary>
+        public float FuelRemainingLiters { get; set; }
+
         /// <summary>연료 소모율 (%/s)</summary>
         public float FuelConsumptionRate { get; set; }
 
@@ -249,6 +255,8 @@ namespace RTOScope.Runtime.Aircraft
             // 초기값 설정 - 시작 시 중간 스로틀로 비행
             ThrottleInput = 0.5f;
             ThrottleCommand = 0.5f;
+            FuelCapacityLiters = 4000f;
+            FuelRemainingLiters = 4000f;
             FuelLevel = 100f;
             FuelConsumptionRate = 0f;
             FuelLowWarning = false;

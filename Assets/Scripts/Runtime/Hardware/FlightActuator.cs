@@ -193,7 +193,7 @@ namespace RTOScope.Runtime.Hardware
             if (!_showDebugInfo || State == null) return;
 
             // 조종석 HUD 정보 표시
-            int boxHeight = 180; // 높이 증가
+            int boxHeight = 200; // 높이 증가
             GUI.Box(new Rect(20, 20, 320, boxHeight), "RTOS FLIGHT SYSTEM v2.1");
 
             int y = 45;
@@ -228,6 +228,11 @@ namespace RTOScope.Runtime.Hardware
             // 공기역학 데이터
             GUI.Label(new Rect(30, y, 300, lineHeight),
                 $"AoA: {State.AngleOfAttack:F1}°  |  G: {State.GForce:F1}");
+            y += lineHeight;
+
+            // 연료 상태
+            GUI.Label(new Rect(30, y, 300, lineHeight),
+                $"FUEL: {State.FuelRemainingLiters:F0} L ({State.FuelLevel:F0}%)  |  Burn: {State.FuelConsumptionRate:F1} L/s");
             y += lineHeight;
 
             // 힘 정보

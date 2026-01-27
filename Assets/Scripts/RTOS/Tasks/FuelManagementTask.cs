@@ -34,9 +34,10 @@ namespace RTOScope.RTOS.Tasks
             0.0003f  // Limits
         };
 
-        // 소모 모델 (단위: %/s)
-        private const float BASE_BURN_RATE = 0.02f;
-        private const float THROTTLE_BURN_RATE = 0.18f;
+        // 소모 모델 (단위: L/s)
+        // 요구사항: 스로틀 0% => 10 L/s, 100% => 40 L/s
+        private const float BURN_RATE_MIN = 10f;
+        private const float BURN_RATE_MAX = 40f;
 
         // 경고 기준 (%)
         private const float LOW_FUEL = 20f;
@@ -116,10 +117,14 @@ namespace RTOScope.RTOS.Tasks
         {
             if (_state == null) return;
 
-            float burnPerSec = BASE_BURN_RATE + (_throttle * THROTTLE_BURN_RATE);
+            float burnPerSec = Mathf.Lerp(BURN_RATE_MIN, BURN_RATE_MAX, _throttle);
             float burnThisPeriod = burnPerSec * _periodSeconds;
-            _fuelLevel = Mathf.Max(0f, _fuelLevel - burnThisPeriod);
 
+            float capacity = Mathf.Max(1f, _state.FuelCapacityLiters);
+            float remaining = Mathf.Max(0f, _state.FuelRemainingLiters - burnThisPeriod);
+
+            _state.FuelRemainingLiters = remaining;
+            _fuelLevel = (remaining / capacity) * 100f;
             _state.FuelLevel = _fuelLevel;
             _state.FuelConsumptionRate = burnPerSec;
         }
@@ -131,7 +136,11 @@ namespace RTOScope.RTOS.Tasks
             _state.FuelLowWarning = _fuelLevel <= LOW_FUEL;
             _state.FuelCriticalWarning = _fuelLevel <= CRITICAL_FUEL;
 
-            if (_state.FuelCriticalWarning)
+            if (_state.FuelRemainingLiters <= 0.01f)
+            {
+                _state.ThrottleLimit = 0f;
+            }
+            else if (_state.FuelCriticalWarning)
             {
                 _state.ThrottleLimit = 0.6f;
             }
