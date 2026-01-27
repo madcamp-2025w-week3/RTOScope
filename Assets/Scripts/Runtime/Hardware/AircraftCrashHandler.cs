@@ -45,6 +45,12 @@ namespace RTOScope.Runtime.Hardware
         [SerializeField] private bool disableAircraftPhysics = true;
         [SerializeField] private Behaviour[] disableBehaviours;
 
+        [Header("Audio")]
+        [SerializeField] private AudioSource engineAudioSource;
+        [SerializeField] private AudioClip engineLoopClip;
+        [SerializeField] private AudioSource explosionAudioSource;
+        [SerializeField] private AudioClip explosionClip;
+
         [Header("Parts")]
         [SerializeField] private bool autoCollectParts = true;
         [SerializeField] private List<Transform> parts = new List<Transform>();
@@ -68,6 +74,17 @@ namespace RTOScope.Runtime.Hardware
             {
                 var cockpitGo = GameObject.Find("Cockpit Camera");
                 if (cockpitGo != null) cockpitCamera = cockpitGo.GetComponent<Camera>();
+            }
+        }
+
+        private void Start()
+        {
+            if (engineAudioSource != null && engineLoopClip != null)
+            {
+                engineAudioSource.clip = engineLoopClip;
+                engineAudioSource.loop = true;
+                if (!engineAudioSource.isPlaying)
+                    engineAudioSource.Play();
             }
         }
 
@@ -118,6 +135,15 @@ namespace RTOScope.Runtime.Hardware
                 aircraftRigidbody.velocity = Vector3.zero;
                 aircraftRigidbody.angularVelocity = Vector3.zero;
                 aircraftRigidbody.isKinematic = true;
+            }
+
+            if (engineAudioSource != null)
+            {
+                engineAudioSource.Stop();
+            }
+            if (explosionAudioSource != null && explosionClip != null)
+            {
+                explosionAudioSource.PlayOneShot(explosionClip);
             }
 
             BreakApart(hitPoint);

@@ -1506,6 +1506,22 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 316696774}
     - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: explosionClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 0ae26fcb13b802d4b9d76abeb7204e79, type: 3}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: engineLoopClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 2fa37c60397aba94bb5a6e66b4bb5806, type: 3}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: engineAudioSource
+      value: 
+      objectReference: {fileID: 1600020529}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: explosionAudioSource
+      value: 
+      objectReference: {fileID: 1600020529}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
       propertyPath: cameraSwitchController
       value: 
       objectReference: {fileID: 2124688413}
