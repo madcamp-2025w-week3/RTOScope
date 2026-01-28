@@ -336,7 +336,7 @@ namespace RTOScope.RTOS.Kernel
                     break;
             }
             _scheduler.Reset();
-            Debug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
+            RTOSDebug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
         }
 
         /// <summary>
@@ -346,7 +346,7 @@ namespace RTOScope.RTOS.Kernel
         {
             _scheduler = scheduler ?? new PriorityScheduler();
             _scheduler.Reset();
-            Debug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
+            RTOSDebug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
         }
 
         /// <summary>

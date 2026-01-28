@@ -67,7 +67,7 @@ namespace RTOScope.RTOS.Tasks
         private int _nextHardpointIndex;
         private bool _pendingFire;
 
-        private bool _log = true;
+        private bool _log = false;
 
         // =====================================================================
         // 프로퍼티
@@ -289,7 +289,7 @@ namespace RTOScope.RTOS.Tasks
         private void Log(string message)
         {
             if (!_log) return;
-            Debug.Log(message);
+            RTOSDebug.Log(message);
         }
     }
 }

@@ -290,13 +290,13 @@ namespace RTOScope.RTOS.Tasks
                 string jammed = _state.HardpointJammed[i] ? " [JAM]" : "";
                 status += $"  HP{i + 1}: {name} x{ammo}{jammed}\n";
             }
-            Debug.Log(status);
+            RTOSDebug.Log(status);
         }
 
         private void Log(string msg)
         {
             if (_log)
-                Debug.Log(msg);
+                RTOSDebug.Log(msg);
         }
     }
 }

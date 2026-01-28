@@ -59,6 +59,20 @@ namespace RTOScope.Runtime.Hardware
         [SerializeField] private bool autoCollectParts = true;
         [SerializeField] private List<Transform> parts = new List<Transform>();
 
+        [Header("Crash Optimization")]
+        [Tooltip("충돌 전에 파츠 목록을 미리 캐시")]
+        [SerializeField] private bool precacheParts = true;
+        [Tooltip("최대 분리 파츠 수 (0이면 제한 없음)")]
+        [SerializeField] private int maxPartsToBreak = 24;
+        [Tooltip("MeshCollider 대신 BoxCollider로 단순화 (런타임 Convex Cook 방지)")]
+        [SerializeField] private bool useSimpleColliders = true;
+        [Tooltip("BoxCollider 강제 크기(0이면 Renderer bounds로 자동 계산)")]
+        [SerializeField] private Vector3 boxColliderSizeOverride = Vector3.zero;
+        [Tooltip("파츠 분리를 코루틴으로 분산 처리")]
+        [SerializeField] private bool breakApartAsync = true;
+        [Tooltip("코루틴 1프레임당 처리 파츠 수")]
+        [SerializeField] private int partsPerFrame = 8;
+
         private bool _crashed;
 
         private void Awake()
@@ -78,6 +92,11 @@ namespace RTOScope.Runtime.Hardware
             {
                 var cockpitGo = GameObject.Find("Cockpit Camera");
                 if (cockpitGo != null) cockpitCamera = cockpitGo.GetComponent<Camera>();
+            }
+
+            if (autoCollectParts && precacheParts)
+            {
+                CollectParts();
             }
         }
 
@@ -150,7 +169,10 @@ namespace RTOScope.Runtime.Hardware
                 explosionAudioSource.PlayOneShot(explosionClip);
             }
 
-            BreakApart(hitPoint);
+            if (breakApartAsync)
+                StartCoroutine(BreakApartCoroutine(hitPoint));
+            else
+                BreakApart(hitPoint);
 
             if (forceExternalCameraOnCrash && cameraSwitchController != null)
                 cameraSwitchController.ForceExternalView();
@@ -172,36 +194,116 @@ namespace RTOScope.Runtime.Hardware
         private void BreakApart(Vector3 explosionCenter)
         {
             List<Transform> targets = parts;
-            if (autoCollectParts)
+            if (autoCollectParts && (!precacheParts || targets == null || targets.Count == 0))
             {
-                targets = new List<Transform>();
-                foreach (Transform t in partsRoot.GetComponentsInChildren<Transform>())
-                {
-                    if (t == partsRoot) continue;
-                    targets.Add(t);
-                }
+                CollectParts();
+                targets = parts;
             }
 
-            foreach (Transform part in targets)
+            if (targets == null || targets.Count == 0) return;
+
+            int limit = maxPartsToBreak > 0 ? Mathf.Min(maxPartsToBreak, targets.Count) : targets.Count;
+
+            for (int i = 0; i < limit; i++)
             {
+                Transform part = targets[i];
                 if (part == null) continue;
 
-                part.SetParent(null, true);
+                BreakPart(part, explosionCenter);
+            }
+        }
 
-                var rb = part.GetComponent<Rigidbody>();
-                if (rb == null) rb = part.gameObject.AddComponent<Rigidbody>();
+        private IEnumerator BreakApartCoroutine(Vector3 explosionCenter)
+        {
+            List<Transform> targets = parts;
+            if (autoCollectParts && (!precacheParts || targets == null || targets.Count == 0))
+            {
+                CollectParts();
+                targets = parts;
+            }
 
-                var col = part.GetComponent<Collider>();
-                if (col == null)
+            if (targets == null || targets.Count == 0) yield break;
+
+            int limit = maxPartsToBreak > 0 ? Mathf.Min(maxPartsToBreak, targets.Count) : targets.Count;
+            int perFrame = Mathf.Max(1, partsPerFrame);
+
+            for (int i = 0; i < limit; i++)
+            {
+                Transform part = targets[i];
+                if (part != null)
                 {
-                    var meshCol = part.gameObject.AddComponent<MeshCollider>();
-                    meshCol.convex = true;
-                    col = meshCol;
+                    BreakPart(part, explosionCenter);
                 }
 
-                rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f, ForceMode.Impulse);
-                Destroy(part.gameObject, debrisLifetime);
+                if ((i + 1) % perFrame == 0)
+                    yield return null;
             }
+        }
+
+        private void BreakPart(Transform part, Vector3 explosionCenter)
+        {
+            part.SetParent(null, true);
+
+            if (part.TryGetComponent<Rigidbody>(out var rb) == false)
+            {
+                rb = part.gameObject.AddComponent<Rigidbody>();
+            }
+
+            if (useSimpleColliders)
+            {
+                Collider existing = part.GetComponent<Collider>();
+                if (existing is MeshCollider meshCol)
+                {
+                    Destroy(meshCol);
+                    existing = null;
+                }
+
+                if (existing == null)
+                {
+                    BoxCollider box = part.gameObject.AddComponent<BoxCollider>();
+                    ApplyBoxSize(part, box);
+                }
+            }
+
+            rb.AddExplosionForce(explosionForce, explosionCenter, explosionRadius, 0.5f, ForceMode.Impulse);
+            Destroy(part.gameObject, debrisLifetime);
+        }
+
+        private void CollectParts()
+        {
+            parts.Clear();
+            foreach (Transform t in partsRoot.GetComponentsInChildren<Transform>())
+            {
+                if (t == partsRoot) continue;
+                parts.Add(t);
+            }
+        }
+
+        private void ApplyBoxSize(Transform part, BoxCollider box)
+        {
+            if (boxColliderSizeOverride != Vector3.zero)
+            {
+                box.size = boxColliderSizeOverride;
+                box.center = Vector3.zero;
+                return;
+            }
+
+            Renderer[] renderers = part.GetComponentsInChildren<Renderer>();
+            if (renderers.Length == 0)
+            {
+                box.size = Vector3.one * 0.5f;
+                box.center = Vector3.zero;
+                return;
+            }
+
+            Bounds bounds = renderers[0].bounds;
+            for (int i = 1; i < renderers.Length; i++)
+            {
+                bounds.Encapsulate(renderers[i].bounds);
+            }
+
+            box.center = part.InverseTransformPoint(bounds.center);
+            box.size = bounds.size;
         }
 
         private IEnumerator ShowGameOverAfterDelay()
