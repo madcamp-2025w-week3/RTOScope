@@ -288,7 +288,7 @@ namespace RTOScope.RTOS.Tasks
         private void Log(string msg)
         {
             if (_log)
-                Debug.Log(msg);
+                RTOSDebug.Log(msg);
         }
     }
 }

@@ -1225,9 +1225,23 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 697990879}
     - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
+      propertyPath: maxPartsToBreak
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3922178019327956, guid: 92c1f035583aa8c488c5b216efbb0609, type: 3}
       propertyPath: cameraSwitchController
       value: 
       objectReference: {fileID: 2124688413}
+    - target: {fileID: 260557448096813902, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      propertyPath: _log
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 260557448096813902, guid: 92c1f035583aa8c488c5b216efbb0609,
+        type: 3}
+      propertyPath: _drawDebug
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4380764110321735051, guid: 92c1f035583aa8c488c5b216efbb0609,
         type: 3}
       propertyPath: m_Name

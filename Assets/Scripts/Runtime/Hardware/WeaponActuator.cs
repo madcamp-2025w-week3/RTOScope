@@ -31,7 +31,7 @@ namespace RTOScope.Runtime.Hardware
         [SerializeField] private int _missileLayer = 0; // Default
 
         [Header("Debug")]
-        [SerializeField] private bool _log = true;
+        [SerializeField] private bool _log = false;
 
         public AircraftState State { get; set; }
         private bool _stateInitialized;

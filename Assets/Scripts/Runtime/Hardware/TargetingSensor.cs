@@ -39,6 +39,16 @@ namespace RTOScope.Runtime.Hardware
         [Tooltip("Target 태그 (선택)")]
         [SerializeField] private string _targetTag = "Target";
 
+        [Header("Scan Optimization")]
+        [Tooltip("탐지 스캔 주기(초). 0이면 매 FixedUpdate마다 스캔")]
+        [SerializeField] private float _scanIntervalSeconds = 0.05f;
+        [Tooltip("OverlapSphereNonAlloc 버퍼 크기")]
+        [SerializeField] private int _overlapBufferSize = 128;
+        [Tooltip("스캔을 N프레임마다 수행 (1이면 매 프레임)")]
+        [SerializeField] private int _scanEveryNFrames = 1;
+        [Tooltip("한 프레임에 처리할 후보 수 (0이면 전부 처리)")]
+        [SerializeField] private int _processBatchSize = 64;
+
         [Header("Trigger 포함 여부")]
         [SerializeField] private bool _includeTriggerColliders = true;
 
@@ -49,7 +59,7 @@ namespace RTOScope.Runtime.Hardware
 
         [Header("Debug")]
         [SerializeField] private bool _drawDebug = false;
-        [SerializeField] private bool _log = true;
+        [SerializeField] private bool _log = false;
         [SerializeField] private float _logInterval = 0.5f;
 
         public AircraftState State { get; set; }
@@ -68,6 +78,18 @@ namespace RTOScope.Runtime.Hardware
         private int _lockedIdCache = -1;
         private Transform _lockedTransform;
         private Transform _selfRootRoot;
+        private float _nextScanTime;
+        private Collider[] _overlapHits;
+        private int _scanFrameCounter;
+        private int _pendingHitCount;
+        private int _pendingIndex;
+        private bool _scanInProgress;
+        private float _pendingBestScore;
+        private Transform _pendingBest;
+        private int _pendingBestId;
+        private Vector3 _pendingBestPosition;
+        private float _pendingBestDistance;
+        private float _pendingBestAngle;
 
         private void Awake()
         {
@@ -101,7 +123,23 @@ namespace RTOScope.Runtime.Hardware
         {
             if (State == null || _targetCamera == null) return;
 
-            UpdateCandidates();
+            float now = Time.time;
+            _scanFrameCounter++;
+
+            bool timeReady = _scanIntervalSeconds <= 0f || now >= _nextScanTime;
+            bool frameReady = _scanEveryNFrames <= 1 || _scanFrameCounter >= _scanEveryNFrames;
+
+            if (!_scanInProgress && timeReady && frameReady)
+            {
+                UpdateCandidates(); // 스캔 시작
+                _nextScanTime = now + _scanIntervalSeconds;
+                _scanFrameCounter = 0;
+            }
+
+            if (_scanInProgress)
+            {
+                ProcessScanBatch();
+            }
             UpdateLockedInfo();
             CleanupKnownTargets();
         }
@@ -140,27 +178,67 @@ namespace RTOScope.Runtime.Hardware
             QueryTriggerInteraction triggerMode = _includeTriggerColliders
                 ? QueryTriggerInteraction.Collide
                 : QueryTriggerInteraction.Ignore;
-            Collider[] hits = Physics.OverlapSphere(camPos, _maxRange, ~0, triggerMode);
-
-            float bestScore = float.MaxValue;
-            float halfFov = _lockFov * 0.5f;
-
-            foreach (Collider hit in hits)
+            if (_overlapHits == null || _overlapHits.Length != _overlapBufferSize)
             {
+                _overlapHits = new Collider[_overlapBufferSize];
+            }
+            int hitCount = Physics.OverlapSphereNonAlloc(camPos, _maxRange, _overlapHits, ~0, triggerMode);
+            if (hitCount >= _overlapHits.Length)
+            {
+                _overlapBufferSize = Mathf.Max(_overlapBufferSize * 2, hitCount + 1);
+                _overlapHits = new Collider[_overlapBufferSize];
+                hitCount = Physics.OverlapSphereNonAlloc(camPos, _maxRange, _overlapHits, ~0, triggerMode);
+            }
+
+            _pendingHitCount = hitCount;
+            _pendingIndex = 0;
+            _pendingBestScore = float.MaxValue;
+            _pendingBest = null;
+            _pendingBestId = -1;
+            _pendingBestPosition = Vector3.zero;
+            _pendingBestDistance = 0f;
+            _pendingBestAngle = 0f;
+            _scanInProgress = true;
+
+            if (_pendingHitCount <= 0)
+            {
+                FinalizeScan(camPos, camForward);
+            }
+        }
+
+        private void ProcessScanBatch()
+        {
+            if (_pendingHitCount <= 0)
+            {
+                Vector3 camPos = _targetCamera.transform.position;
+                Vector3 camForward = _targetCamera.transform.forward;
+                FinalizeScan(camPos, camForward);
+                return;
+            }
+
+            Vector3 camPosLocal = _targetCamera.transform.position;
+            Vector3 camForwardLocal = _targetCamera.transform.forward;
+            float halfFov = _lockFov * 0.5f;
+            int batchSize = _processBatchSize <= 0 ? _pendingHitCount : _processBatchSize;
+            int end = Mathf.Min(_pendingIndex + batchSize, _pendingHitCount);
+
+            for (int i = _pendingIndex; i < end; i++)
+            {
+                Collider hit = _overlapHits[i];
                 if (hit == null) continue;
 
                 Transform candidate = ResolveTargetTransform(hit.transform);
                 if (candidate == null) continue;
 
                 Vector3 targetPos = GetTargetPosition(candidate, hit);
-                Vector3 toTarget = targetPos - camPos;
+                Vector3 toTarget = targetPos - camPosLocal;
                 float distance = toTarget.magnitude;
                 if (distance < 0.001f || distance > _maxRange) continue;
 
-                float angle = Vector3.Angle(camForward, toTarget);
+                float angle = Vector3.Angle(camForwardLocal, toTarget);
                 if (angle > halfFov) continue;
 
-                if (_useLineOfSight && !HasLineOfSight(camPos, targetPos, candidate, distance))
+                if (_useLineOfSight && !HasLineOfSight(camPosLocal, targetPos, candidate, distance))
                 {
                     continue;
                 }
@@ -177,16 +255,33 @@ namespace RTOScope.Runtime.Hardware
                 }
 
                 float score = angle + distance * 0.001f;
-                if (score < bestScore)
+                if (score < _pendingBestScore)
                 {
-                    bestScore = score;
-                    _lastCandidate = candidate;
-                    _lastCandidateId = id;
-                    _lastCandidatePosition = targetPos;
-                    _lastCandidateDistance = distance;
-                    _lastCandidateAngle = angle;
+                    _pendingBestScore = score;
+                    _pendingBest = candidate;
+                    _pendingBestId = id;
+                    _pendingBestPosition = targetPos;
+                    _pendingBestDistance = distance;
+                    _pendingBestAngle = angle;
                 }
             }
+
+            _pendingIndex = end;
+            if (_pendingIndex >= _pendingHitCount)
+            {
+                FinalizeScan(camPosLocal, camForwardLocal);
+            }
+        }
+
+        private void FinalizeScan(Vector3 camPos, Vector3 camForward)
+        {
+            _scanInProgress = false;
+
+            _lastCandidate = _pendingBest;
+            _lastCandidateId = _pendingBestId;
+            _lastCandidatePosition = _pendingBestPosition;
+            _lastCandidateDistance = _pendingBestDistance;
+            _lastCandidateAngle = _pendingBestAngle;
 
             if (_lastCandidate != null)
             {

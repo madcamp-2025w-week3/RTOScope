@@ -65,6 +65,8 @@ namespace RTOScope.Runtime.Bootstrap
 
         [Header("디버그")]
         [SerializeField] private bool _logInitialization = true;
+        [SerializeField] private bool _enableRtosLogs = true;
+        [SerializeField] private bool _enableRtosWarnings = true;
 
         // =====================================================================
         // RTOS 컴포넌트
@@ -104,6 +106,7 @@ namespace RTOScope.Runtime.Bootstrap
 
         private void Awake()
         {
+            ApplyLogSettings();
             InitializeRTOS();
         }
 
@@ -271,7 +274,7 @@ namespace RTOScope.Runtime.Bootstrap
             }
             else
             {
-                Debug.LogWarning("[RTOSRunner] FlightActuator가 할당되지 않았습니다!");
+                RTOSDebug.LogWarning("[RTOSRunner] FlightActuator가 할당되지 않았습니다!");
             }
 
             if (_sensor != null)
@@ -280,7 +283,7 @@ namespace RTOScope.Runtime.Bootstrap
             }
             else
             {
-                Debug.LogWarning("[RTOSRunner] SensorArray가 할당되지 않았습니다!");
+                RTOSDebug.LogWarning("[RTOSRunner] SensorArray가 할당되지 않았습니다!");
             }
 
             if (_view != null)
@@ -294,7 +297,7 @@ namespace RTOScope.Runtime.Bootstrap
             }
             else
             {
-                Debug.LogWarning("[RTOSRunner] WeaponActuator가 할당되지 않았습니다.");
+                RTOSDebug.LogWarning("[RTOSRunner] WeaponActuator가 할당되지 않았습니다.");
             }
 
             if (_targetingSensor != null)
@@ -303,7 +306,7 @@ namespace RTOScope.Runtime.Bootstrap
             }
             else
             {
-                Debug.LogWarning("[RTOSRunner] TargetingSensor가 할당되지 않았습니다.");
+                RTOSDebug.LogWarning("[RTOSRunner] TargetingSensor가 할당되지 않았습니다.");
             }
 
             // -----------------------------------------------------------------
@@ -325,15 +328,15 @@ namespace RTOScope.Runtime.Bootstrap
 
                 if (_logInitialization)
                 {
-                    Debug.Log($"[RTOSRunner] 초기 속도 설정: {initialVelocity.magnitude:F1} m/s");
+                    RTOSDebug.Log($"[RTOSRunner] 초기 속도 설정: {initialVelocity.magnitude:F1} m/s");
                 }
             }
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 5개 태스크 등록됨 (+ IdleTask)");
-                Debug.Log($"[RTOSRunner] FixedUpdate 사용: {_useFixedUpdate}, Fixed Timestep: {Time.fixedDeltaTime * 1000f:F1}ms");
-                Debug.Log($"[RTOSRunner] 스케줄러: {_kernel.Scheduler.Name}");
+                RTOSDebug.Log("[RTOSRunner] RTOS 초기화 완료 - 5개 태스크 등록됨 (+ IdleTask)");
+                RTOSDebug.Log($"[RTOSRunner] FixedUpdate 사용: {_useFixedUpdate}, Fixed Timestep: {Time.fixedDeltaTime * 1000f:F1}ms");
+                RTOSDebug.Log($"[RTOSRunner] 스케줄러: {_kernel.Scheduler.Name}");
             }
 
             // -----------------------------------------------------------------
@@ -351,7 +354,7 @@ namespace RTOScope.Runtime.Bootstrap
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 시작");
+                RTOSDebug.Log("[RTOSRunner] RTOS 시작");
             }
         }
 
@@ -362,7 +365,7 @@ namespace RTOScope.Runtime.Bootstrap
 
             if (_logInitialization)
             {
-                Debug.Log("[RTOSRunner] RTOS 정지");
+                RTOSDebug.Log("[RTOSRunner] RTOS 정지");
             }
         }
 
@@ -373,6 +376,7 @@ namespace RTOScope.Runtime.Bootstrap
 #if UNITY_EDITOR
         private void OnValidate()
         {
+            ApplyLogSettings();
             // Rigidbody 자동 탐색 (Transform이 설정된 경우)
             if (_aircraftTransform != null && _aircraftRigidbody == null)
             {
@@ -395,5 +399,11 @@ namespace RTOScope.Runtime.Bootstrap
             }
         }
 #endif
+
+        private void ApplyLogSettings()
+        {
+            RTOSDebug.EnableLogs = _enableRtosLogs;
+            RTOSDebug.EnableWarnings = _enableRtosWarnings;
+        }
     }
 }
