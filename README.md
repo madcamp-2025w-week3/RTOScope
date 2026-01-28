@@ -1,353 +1,466 @@
-# RTOScope
+<p align="center">
+  <img src="https://img.shields.io/badge/Unity-2022.3%20LTS-000000?style=for-the-badge&logo=unity&logoColor=white" alt="Unity Version"/>
+  <img src="https://img.shields.io/badge/C%23-10.0-239120?style=for-the-badge&logo=c-sharp&logoColor=white" alt="C# Version"/>
+  <img src="https://img.shields.io/badge/RTOS-Custom%20Kernel-blue?style=for-the-badge" alt="RTOS"/>
+  <img src="https://img.shields.io/badge/KAIST-Immersive%20Camp-red?style=for-the-badge" alt="KAIST"/>
+</p>
 
-A real-time operating system (RTOS) simulator that visualizes task scheduling, priority management, and deadline behavior through an aircraft control simulation built in Unity.
-
----
-
-## 1. Project Overview
-
-### What is RTOScope?
-
-RTOScope is an educational and demonstrative project that implements a simulated RTOS kernel in pure C#, using Unity as a visualization and hardware abstraction layer. The project models how real-time embedded systems manage concurrent tasks with strict timing constraints.
-
-### What Problem Does It Explore?
-
-Real-time systems—particularly those in safety-critical domains like avionics—must guarantee that tasks complete within specified deadlines. This project explores:
-
-- How priority-based preemptive scheduling works
-- What happens when tasks miss their deadlines
-- How shared resources are protected in concurrent environments
-- The relationship between software (RTOS) and hardware (sensors, actuators)
-
-### Why Aircraft Simulation?
-
-Aircraft control systems are canonical examples of hard real-time systems. A flight control loop must execute at precise intervals; failure to do so can result in loss of control. By using an aircraft as the visualization medium:
-
-- Task priorities become intuitive (flight control > radar > logging)
-- Deadline violations have visible consequences (unstable flight)
-- The hardware/software boundary is clearly illustrated
-
-This is not a flight simulator game. The aerodynamics are intentionally simplified. The focus is on demonstrating RTOS behavior, not realistic physics.
+<h1 align="center">🛩️ RTOScope</h1>
+<h3 align="center">RTOS 기반 전투기 시뮬레이터</h3>
+<p align="center">
+  <b>Real-Time Operating System concepts meet immersive aircraft combat simulation</b>
+</p>
 
 ---
 
-## 2. Design Philosophy
+## 📺 Demo Video
 
-### Separation of Concerns
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID">
+    <img src="https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg" alt="RTOScope Demo" width="600"/>
+  </a>
+</p>
 
-The project strictly separates three layers:
-
-| Layer | Responsibility | Unity Dependency |
-|-------|----------------|------------------|
-| Hardware | Physical simulation (transforms, physics) | Yes |
-| RTOS Kernel | Scheduling, timing, synchronization | No |
-| Tasks | Application logic (flight control, radar) | No |
-
-### Unity as Hardware + HAL
-
-Unity serves two purposes:
-
-1. **Hardware Simulation**: The aircraft GameObject represents physical hardware. Its Transform and Rigidbody simulate actuators and sensors.
-
-2. **Hardware Abstraction Layer (HAL)**: `SensorArray` reads Unity state and writes to shared memory. `FlightActuator` reads commands from shared memory and applies them to Unity transforms.
-
-### Pure C# RTOS Logic
-
-All RTOS kernel code and task logic are written in pure C# without any `UnityEngine` dependencies. This design choice:
-
-- Ensures the RTOS logic is portable and testable outside Unity
-- Maintains a clear boundary between OS and hardware
-- Reflects real embedded systems where OS code does not directly access hardware registers
+<p align="center">
+  <i>Click the thumbnail to watch the demo video</i>
+</p>
 
 ---
 
-## 3. System Architecture
+## 📋 Table of Contents
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Unity Runtime                            │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │ SensorArray │  │   Flight    │  │      RTOSRunner         │  │
-│  │    (HAL)    │  │  Actuator   │  │   (Kernel Heartbeat)    │  │
-│  └──────┬──────┘  └──────┬──────┘  └───────────┬─────────────┘  │
-│         │                │                     │                 │
-│         ▼                ▼                     │                 │
-│  ┌─────────────────────────────┐               │                 │
-│  │      AircraftState          │               │                 │
-│  │     (Shared Memory)         │◄──────────────┘                 │
-│  └─────────────┬───────────────┘                                 │
-└────────────────┼─────────────────────────────────────────────────┘
-                 │
-┌────────────────┼─────────────────────────────────────────────────┐
-│                ▼           RTOS Layer (Pure C#)                  │
-│  ┌─────────────────────────────────────────────────────────────┐ │
-│  │                      RTOSKernel                              │ │
-│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │ │
-│  │  │ TimeManager │  │  Scheduler  │  │  DeadlineManager    │  │ │
-│  │  └─────────────┘  └─────────────┘  └─────────────────────┘  │ │
-│  └─────────────────────────────────────────────────────────────┘ │
-│                              │                                    │
-│       ┌──────────────────────┼──────────────────────┐            │
-│       ▼                      ▼                      ▼            │
-│  ┌─────────┐           ┌─────────┐            ┌─────────┐        │
-│  │  TCB    │           │  TCB    │            │  TCB    │        │
-│  │ Flight  │           │ Radar   │            │ Health  │        │
-│  │ Control │           │  Task   │            │ Monitor │        │
-│  └─────────┘           └─────────┘            └─────────┘        │
-└──────────────────────────────────────────────────────────────────┘
-```
-
-### Component Descriptions
-
-| Component | Description |
-|-----------|-------------|
-| **RTOSRunner** | Unity MonoBehaviour that drives the kernel. Converts `FixedUpdate` calls into kernel ticks. |
-| **AircraftState** | Shared memory structure. Tasks read sensor data and write control commands here. |
-| **SensorArray** | HAL input. Reads Unity Transform/Rigidbody data and populates AircraftState. |
-| **FlightActuator** | HAL output. Reads commands from AircraftState and applies them to Unity Transform. |
-| **RTOSKernel** | The scheduler. Manages TCBs, selects tasks to run, tracks time, checks deadlines. |
-| **TCB** | Task Control Block. Contains task state, priority, timing info, and execution statistics. |
-| **IRTOSTask** | Interface that all tasks implement. Defines `Execute()`, `Initialize()`, `Cleanup()`. |
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Technology Stack](#-technology-stack)
+- [System Architecture](#-system-architecture)
+- [RTOS Implementation](#-rtos-implementation)
+- [Game Mechanics](#-game-mechanics)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Controls](#-controls)
+- [Team](#-team)
 
 ---
 
-## 4. RTOS Kernel Features
+## 🎯 Overview
 
-### Implemented
+**RTOScope**는 Real-Time Operating System (RTOS) 개념을 학습하고 시각화하기 위해 설계된 Unity 기반 전투기 시뮬레이터입니다. 항공기 제어 시스템의 복잡한 실시간 태스크 스케줄링을 게임 형식으로 체험할 수 있습니다.
 
-| Feature | Status | Description |
-|---------|--------|-------------|
-| Priority-based scheduling | Skeleton | Higher priority tasks preempt lower priority tasks |
-| Task Control Block (TCB) | Implemented | Stores task state, priority, period, deadline, statistics |
-| Periodic task activation | Skeleton | Tasks are activated based on their period |
-| Deadline tracking | Skeleton | Absolute deadlines are calculated per task instance |
-| Hard/Soft deadline types | Implemented | Distinguishes between critical and non-critical deadlines |
-| Execution statistics | Implemented | Tracks execution count, WCET, average execution time |
-| Context switch counting | Implemented | Records number of context switches |
+### 왜 전투기 시뮬레이터인가?
 
-### Planned
+항공기 비행 제어 시스템은 가장 대표적인 **Hard Real-Time System**입니다:
+- 비행 제어 루프는 **정확한 주기**로 실행되어야 하며, 데드라인 위반은 치명적
+- 레이더, 무장, 엔진 모니터링 등 **다중 태스크**의 우선순위 기반 스케줄링 필요
+- 센서 데이터 수집과 액추에이터 제어의 **HAL(Hardware Abstraction Layer)** 분리
 
+이 프로젝트는 RTOS의 핵심 개념을 실제 게임플레이로 체험하면서 학습할 수 있도록 설계되었습니다.
+
+---
+
+## ✨ Key Features
+
+### 🔧 RTOS Kernel
 | Feature | Description |
 |---------|-------------|
-| Rate Monotonic Scheduling (RMS) | Static priority assignment based on period |
-| Earliest Deadline First (EDF) | Dynamic priority based on absolute deadline |
-| Priority inheritance | Prevents priority inversion when using mutexes |
-| Deadline miss handling | Configurable responses to missed deadlines |
-| Jitter measurement | Statistical analysis of timing variations |
+| **다중 스케줄러** | FCFS, Priority-based, Round Robin, SJF 4가지 스케줄링 알고리즘 지원 |
+| **Task Control Block (TCB)** | 태스크 상태, 우선순위, 주기, 데드라인, 실행 통계 관리 |
+| **Hard/Soft Deadline** | 데드라인 유형에 따른 차별화된 처리 |
+| **동기화 프리미티브** | Mutex, Semaphore, MessageBus 구현 |
+| **RTOS Dashboard** | 실시간 커널 상태 및 태스크 통계 시각화 |
+
+### ✈️ Flight System
+| Feature | Description |
+|---------|-------------|
+| **공기역학 시뮬레이션** | 양력, 항력, 추력 계산 기반 비행 물리 |
+| **PID 제어** | 자세 제어를 위한 PID 컨트롤러 |
+| **엔진 상태 모니터링** | 온도, 연료 소모 관리 |
+| **충돌 회피 시스템** | 지형 충돌 경고 및 자동 회피 |
+
+### 🎯 Combat System
+| Feature | Description |
+|---------|-------------|
+| **레이더 타겟 탐지** | FOV 및 거리 기반 적 탐지 |
+| **미사일 락온** | 수동/자동 타겟 락온 시스템 |
+| **유도 미사일 발사** | 실제 추적 알고리즘이 적용된 호밍 미사일 |
+| **대응책 시스템** | 플레어/채프 발사 시퀀스 |
+
+### 🎮 Game Elements
+| Feature | Description |
+|---------|-------------|
+| **점수 시스템** | 타겟 파괴 시 점수 획득 |
+| **미션 클리어** | 목표 달성 조건 충족 시 클리어 |
+| **게임 오버** | 추락 또는 실패 시 게임 오버 처리 |
+| **HUD 시스템** | 콕핏 뷰 기반 전투기 HUD |
+
+---
+
+## 🛠️ Technology Stack
+
+<table>
+<tr>
+<td align="center"><b>Category</b></td>
+<td align="center"><b>Technology</b></td>
+</tr>
+<tr>
+<td>Game Engine</td>
+<td>Unity 2022.3 LTS (Universal Render Pipeline)</td>
+</tr>
+<tr>
+<td>Language</td>
+<td>C# 10.0</td>
+</tr>
+<tr>
+<td>RTOS Kernel</td>
+<td>Custom Pure C# Implementation (No Unity Dependencies)</td>
+</tr>
+<tr>
+<td>UI System</td>
+<td>Unity UI + TextMeshPro</td>
+</tr>
+<tr>
+<td>Physics</td>
+<td>Custom Aerodynamics + Unity Transform</td>
+</tr>
+</table>
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           Unity Runtime Layer                             │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌───────────────┐   │
+│  │ SensorArray │  │   Flight    │  │   Weapon    │  │   Targeting   │   │
+│  │    (HAL)    │  │  Actuator   │  │  Actuator   │  │    Sensor     │   │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └───────┬───────┘   │
+│         │                │                │                 │            │
+│         ▼                ▼                ▼                 ▼            │
+│  ┌────────────────────────────────────────────────────────────────────┐  │
+│  │                       AircraftState (Shared Memory)                 │  │
+│  │     Position, Velocity, Attitude, Weapon Status, Target Info       │  │
+│  └──────────────────────────────┬─────────────────────────────────────┘  │
+│                                 │                                         │
+│  ┌──────────────────────────────┼─────────────────────────────────────┐  │
+│  │                        RTOSRunner                                   │  │
+│  │                    (Kernel Heartbeat)                               │  │
+│  └──────────────────────────────┼─────────────────────────────────────┘  │
+└─────────────────────────────────┼─────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────┼─────────────────────────────────────────┐
+│                                 ▼       RTOS Layer (Pure C#)              │
+│  ┌──────────────────────────────────────────────────────────────────────┐ │
+│  │                           RTOSKernel                                  │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  │ │
+│  │  │ TimeManager │  │ ReadyList   │  │  Scheduler  │  │  Deadline   │  │ │
+│  │  │             │  │             │  │  (4 Types)  │  │  Manager    │  │ │
+│  │  └─────────────┘  └─────────────┘  └─────────────┘  └─────────────┘  │ │
+│  └──────────────────────────────────────────────────────────────────────┘ │
+│                                  │                                         │
+│       ┌──────────────────────────┼──────────────────────────┐             │
+│       ▼          ▼          ▼    ▼     ▼          ▼         ▼             │
+│  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐       │
+│  │ Flight │ │ Radar  │ │ Weapon │ │Counter │ │ Engine │ │  HUD   │       │
+│  │Control │ │  Task  │ │Control │ │Measure │ │ Health │ │  Task  │       │
+│  │ 100Hz  │ │  20Hz  │ │  50Hz  │ │  25Hz  │ │  10Hz  │ │  30Hz  │       │
+│  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘ └────────┘       │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+### Layer 분리 원칙
+
+| Layer | Responsibility | Unity 의존성 |
+|-------|----------------|-------------|
+| **RTOS Layer** | 스케줄링, 태스크 관리, 동기화 | ❌ 없음 (Pure C#) |
+| **HAL Layer** | 센서 입력, 액추에이터 출력 | ✅ Unity API 사용 |
+| **Unity Runtime** | 렌더링, 물리, UI | ✅ Unity API 사용 |
+
+---
+
+## ⚙️ RTOS Implementation
+
+### Scheduling Algorithms
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│                     Scheduler Selection                         │
+├────────────────────────────────────────────────────────────────┤
+│  1. FCFS (First-Come, First-Served)                            │
+│     └─ 도착 순서대로 실행, 단순하지만 우선순위 무시            │
+│                                                                  │
+│  2. Priority-Based Preemptive                                   │
+│     └─ 높은 우선순위 태스크가 선점, 항공기 제어에 적합          │
+│                                                                  │
+│  3. Round Robin                                                 │
+│     └─ 시간 할당량 기반 순환, 공정한 CPU 분배                   │
+│                                                                  │
+│  4. SJF (Shortest Job First)                                    │
+│     └─ 실행 시간이 짧은 태스크 우선, 평균 대기 시간 최소화      │
+└────────────────────────────────────────────────────────────────┘
+```
+
+### Registered Tasks
+
+| Task | Priority | Period | Deadline | 역할 |
+|------|----------|--------|----------|------|
+| `FlightControlTask` | 0 (Critical) | 10ms | Hard | 공기역학 계산, 자세 제어 |
+| `RadarTask` | 1 (High) | 50ms | Soft | 타겟 탐지, 트래킹 |
+| `WeaponControlTask` | 2 (High) | 20ms | Hard | 락온, 미사일 발사 |
+| `CountermeasureControlTask` | 3 (Medium) | 40ms | Soft | 플레어/채프 대응 |
+| `EngineHealthTask` | 4 (Medium) | 100ms | Soft | 엔진 상태 모니터링 |
+| `FuelManagementTask` | 5 (Medium) | 100ms | Soft | 연료 소모 관리 |
+| `StoresManagementTask` | 6 (Medium) | 50ms | Soft | 무장 재고 관리 |
+| `RangeEstimatorTask` | 7 (Low) | 100ms | Soft | 거리 추정 |
+| `CollisionAvoidanceTask` | 8 (Low) | 100ms | Soft | 충돌 회피 |
+| `HUDTask` | 9 (Low) | 33ms | Soft | HUD 데이터 갱신 |
+| `HealthMonitor` | 10 (Low) | 100ms | Soft | 시스템 상태 감시 |
+| `IdleTask` | 255 (Lowest) | - | - | 유휴 상태 처리 |
 
 ### Synchronization Primitives
 
-| Primitive | Status | Description |
-|-----------|--------|-------------|
-| Mutex | Skeleton | Mutual exclusion with priority inheritance support |
-| Semaphore | Skeleton | Counting semaphore for resource management |
-| MessageBus | Skeleton | Inter-task communication via message queues |
-
----
-
-## 5. Task Model
-
-Tasks implement the `IRTOSTask` interface and are managed through `TCB` (Task Control Block) structures.
-
-### IRTOSTask Interface
-
 ```csharp
-public interface IRTOSTask
-{
-    string Name { get; }
-    void Initialize();
-    void Execute(float deltaTime);
-    void Cleanup();
-    void OnDeadlineMiss();
-}
+// Mutex - 상호 배제
+RTOSMutex mutex = new RTOSMutex();
+mutex.Lock();
+// Critical Section
+mutex.Unlock();
+
+// Semaphore - 자원 관리
+RTOSSemaphore sem = new RTOSSemaphore(3); // 3개 자원
+sem.Wait();
+// Use resource
+sem.Signal();
+
+// MessageBus - 태스크 간 통신
+MessageBus.Publish("radar.target.detected", targetData);
+MessageBus.Subscribe("radar.target.detected", OnTargetDetected);
 ```
-
-### Defined Tasks
-
-| Task | Priority | Period | Deadline Type | Description |
-|------|----------|--------|---------------|-------------|
-| FlightControlTask | Critical (0) | 10ms | Hard | PID-based attitude control. Must never miss deadline. |
-| RadarTask | High (1) | 50ms | Soft | Target detection and tracking. Degraded performance on miss. |
-| HealthMonitor | Medium (2) | 100ms | Soft | System watchdog. Monitors CPU usage and deadline violations. |
-
-### Why Tasks Are Not MonoBehaviours
-
-In real embedded systems, tasks are managed by the RTOS scheduler, not the underlying hardware or OS. By keeping tasks as pure C# classes:
-
-- The scheduler has full control over when tasks execute
-- Tasks cannot accidentally access Unity APIs
-- The code structure mirrors real embedded software
-- Tasks are unit-testable without Unity
 
 ---
 
-## 6. Unity Integration
+## 🎮 Game Mechanics
 
-### RTOSRunner: The Kernel Heartbeat
+### Combat Flow
 
-`RTOSRunner` is a MonoBehaviour that bridges Unity and the RTOS kernel:
-
-```csharp
-private void FixedUpdate()
-{
-    if (_kernel != null && _kernel.State == KernelState.Running)
-    {
-        _kernel.Tick(Time.fixedDeltaTime);
-    }
-}
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Radar     │ ──▶ │  Target     │ ──▶ │   Lock-On   │ ──▶ │   Missile   │
+│   Sweep     │     │  Detection  │     │   Acquire   │     │   Launch    │
+└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+       │                   │                   │                   │
+       ▼                   ▼                   ▼                   ▼
+  FOV/Range           Candidate            Manual/Auto        Homing
+  Filtering           Evaluation           Targeting          Guidance
 ```
 
-### FixedUpdate vs Update
+### Score System
 
-The project uses `FixedUpdate` (default 50Hz) rather than `Update` for more consistent timing. In a real RTOS, a hardware timer would generate interrupts at precise intervals. `FixedUpdate` provides the closest approximation in Unity.
+- **타겟 파괴**: 점수 획득
+- **미션 클리어**: 일정 타겟 수 또는 점수 달성 시 클리어
+- **게임 오버**: 지면 충돌 또는 치명적 손상 시
 
-### Simplified Physics
+### HUD Elements
 
-The aircraft physics are intentionally simplified:
-
-- No realistic aerodynamic model
-- No stall simulation
-- No wind or turbulence
-
-The goal is to demonstrate RTOS behavior, not to create a realistic flight model. The simplified physics ensure that the effects of missed deadlines or incorrect scheduling are visible without complex tuning.
+- 속도 (IAS/TAS)
+- 고도 (Altitude)
+- 방향 (Heading)
+- 롤/피치 지시계
+- 타겟 락온 표시
+- 미사일 잔량
+- 경고 표시
 
 ---
 
-## 7. Folder Structure
+## 📁 Project Structure
 
 ```
-Assets/Scripts/
-├── RTOS/                    # Pure C# - No Unity dependencies
-│   ├── Kernel/              # RTOS core components
-│   │   ├── RTOSKernel.cs    # Main scheduler
-│   │   ├── IRTOSTask.cs     # Task interface
-│   │   ├── TCB.cs           # Task Control Block
-│   │   ├── PriorityQueue.cs # Ready queue implementation
-│   │   ├── TimeManager.cs   # Tick and timer management
-│   │   ├── TaskStatistics.cs# Execution statistics
-│   │   ├── DeadlineManager.cs# Deadline monitoring
-│   │   └── MemoryManager.cs # Static memory pool (planned)
-│   ├── Sync/                # Synchronization primitives
-│   │   ├── Mutex.cs
-│   │   ├── Semaphore.cs
-│   │   └── MessageBus.cs
-│   └── Tasks/               # Application tasks
-│       ├── FlightControlTask.cs
-│       ├── RadarTask.cs
-│       └── HealthMonitor.cs
+Assets/
+├── 📁 Scripts/
+│   ├── 📁 RTOS/                         # Pure C# RTOS 구현 (Unity 비의존)
+│   │   ├── 📁 Kernel/                   # 커널 핵심 컴포넌트
+│   │   │   ├── RTOSKernel.cs            # 메인 스케줄러
+│   │   │   ├── TCB.cs                   # Task Control Block
+│   │   │   ├── IRTOSTask.cs             # 태스크 인터페이스
+│   │   │   ├── ReadyList.cs             # Ready Queue
+│   │   │   ├── TimeManager.cs           # 타이머 관리
+│   │   │   ├── DeadlineManager.cs       # 데드라인 감시
+│   │   │   ├── PriorityScheduler.cs     # 우선순위 스케줄러
+│   │   │   ├── FCFSScheduler.cs         # FCFS 스케줄러
+│   │   │   ├── RoundRobinScheduler.cs   # RR 스케줄러
+│   │   │   └── SJFScheduler.cs          # SJF 스케줄러
+│   │   ├── 📁 Sync/                     # 동기화 프리미티브
+│   │   │   ├── Mutex.cs                 # 뮤텍스
+│   │   │   ├── Semaphore.cs             # 세마포어
+│   │   │   └── MessageBus.cs            # 메시지 버스
+│   │   └── 📁 Tasks/                    # RTOS 태스크들
+│   │       ├── FlightControlTask.cs     # 비행 제어 (100Hz)
+│   │       ├── RadarTask.cs             # 레이더 탐지
+│   │       ├── WeaponControlTask.cs     # 무장 제어
+│   │       ├── CountermeasureControlTask.cs  # 대응책 제어
+│   │       ├── EngineHealthTask.cs      # 엔진 상태
+│   │       ├── FuelManagementTask.cs    # 연료 관리
+│   │       ├── StoresManagementTask.cs  # 무장 재고
+│   │       ├── RangeEstimatorTask.cs    # 거리 추정
+│   │       ├── CollisionAvoidanceTask.cs # 충돌 회피
+│   │       ├── HUDTask.cs               # HUD 갱신
+│   │       ├── HealthMonitor.cs         # 상태 감시
+│   │       └── IdleTask.cs              # 유휴 태스크
+│   │
+│   └── 📁 Runtime/                      # Unity 의존 코드
+│       ├── 📁 Bootstrap/                # 시스템 부트스트랩
+│       │   └── RTOSRunner.cs            # 커널 드라이버 (FixedUpdate)
+│       ├── 📁 Aircraft/                 # 항공기 표현
+│       │   ├── AircraftState.cs         # 공유 메모리 구조체
+│       │   ├── AircraftView.cs          # 비주얼 이펙트
+│       │   ├── CockpitCameraFollow.cs   # 콕핏 카메라
+│       │   ├── CameraSwitchController.cs# 카메라 전환
+│       │   └── FollowPlayerX.cs         # 추적 카메라
+│       ├── 📁 Hardware/                 # HAL (Hardware Abstraction Layer)
+│       │   ├── SensorArray.cs           # 센서 입력 (Unity → State)
+│       │   ├── FlightActuator.cs        # 비행 출력 (State → Unity)
+│       │   ├── WeaponActuator.cs        # 무장 발사 액추에이터
+│       │   ├── CountermeasureActuator.cs# 대응책 액추에이터
+│       │   ├── TargetingSensor.cs       # 타겟 탐지 센서
+│       │   ├── PIDController.cs         # PID 컨트롤러
+│       │   ├── PlayerControllerX.cs     # 수동 조작
+│       │   └── AircraftCrashHandler.cs  # 충돌 처리
+│       ├── 📁 Game/                     # 게임 로직
+│       │   ├── GameSettings.cs          # 게임 설정
+│       │   ├── ScoreManager.cs          # 점수 관리
+│       │   └── GameClearHandler.cs      # 클리어 처리
+│       ├── 📁 Targets/                  # 타겟 관리
+│       │   └── DestructibleTarget.cs    # 파괴 가능 타겟
+│       └── 📁 UI/                       # UI 컴포넌트
+│           ├── HUDController.cs         # HUD 텍스트 갱신
+│           ├── HUDRenderer.cs           # HUD 렌더링
+│           ├── HUDTapeController.cs     # 테이프 게이지
+│           ├── InfiniteHUDTape.cs       # 무한 스크롤 테이프
+│           ├── TargetingReticleController.cs # 타겟팅 레티클
+│           ├── ThirdPersonTargetingUI.cs    # 3인칭 타겟팅
+│           ├── RTOSDashboard.cs         # RTOS 대시보드
+│           ├── RTOSDashboardWebPublisher.cs # 웹 퍼블리셔
+│           ├── ScoreUI.cs               # 점수 UI
+│           ├── ControlGuideUI.cs        # 조작 가이드
+│           ├── StartMenuController.cs   # 시작 메뉴
+│           ├── MenuAircraftAnimator.cs  # 메뉴 애니메이션
+│           └── MenuBGM.cs               # 배경음악
 │
-└── Runtime/                 # Unity-dependent code
-    ├── Aircraft/            # Aircraft representation
-    │   ├── AircraftState.cs # Shared memory
-    │   ├── AircraftView.cs  # Visual effects
-    │   └── FollowPlayerX.cs # Camera controller
-    ├── Hardware/            # HAL components
-    │   ├── SensorArray.cs   # Input: Unity → AircraftState
-    │   ├── FlightActuator.cs# Output: AircraftState → Unity
-    │   ├── PIDController.cs # Control algorithm
-    │   └── PlayerControllerX.cs # Manual control (debug)
-    ├── Bootstrap/
-    │   └── RTOSRunner.cs    # Kernel driver
-    └── UI/
-        └── RTOSDashboard.cs # Runtime visualization
+├── 📁 Prefabs/                          # 프리팹 (게임 오브젝트 템플릿)
+│   ├── 📁 Aircraft/                     # 항공기 프리팹
+│   ├── 📁 Cockpit/                      # 콕핏 프리팹
+│   ├── 📁 HomingMissile/                # 유도 미사일 프리팹
+│   ├── 📁 Target/                       # 타겟 프리팹
+│   ├── 📁 HUD/                          # HUD 프리팹
+│   ├── 📁 Environment/                  # 환경 프리팹
+│   └── 📁 BackgroundMountain/           # 배경 산악 프리팹
+│
+├── 📁 Scenes/                           # 씬 파일
+│   ├── StartMenu.unity                  # 시작 메뉴 씬
+│   └── main.unity                       # 메인 게임 씬
+│
+├── 📁 Arts/                             # 아트 에셋
+├── 📁 Sounds/                           # 사운드 에셋
+└── 📁 Settings/                         # 프로젝트 설정
 ```
-
-### Key Separation
-
-- **RTOS/**: Zero `using UnityEngine` statements. Portable, testable, mirrors real embedded code.
-- **Runtime/**: Uses Unity APIs. Handles visualization and hardware abstraction.
 
 ---
 
-## 8. How to Run
+## 🚀 Getting Started
 
 ### Requirements
 
-- Unity 2021.3 LTS or later (2022.3 LTS recommended)
+- **Unity 2022.3 LTS** or later
+- **Windows / macOS / Linux**
 - No additional packages required
 
-### Setup
+### Installation
 
-1. Clone the repository
-2. Open the project in Unity Hub
-3. Open the main scene (if not auto-loaded)
-4. Enter Play mode
+```bash
+# 1. Clone the repository
+git clone https://github.com/your-username/RTOScope.git
 
-### What to Expect
+# 2. Open with Unity Hub
+# Add project folder in Unity Hub and open
 
-- The aircraft will maintain level flight (controlled by RTOS tasks)
-- The RTOS Dashboard displays kernel state and task statistics
-- Manual control is available via keyboard (for debugging):
-  - Arrow keys: Pitch and roll
-  - Q/E: Yaw
-  - Shift/Ctrl: Throttle
+# 3. Open StartMenu scene
+# Assets/Scenes/StartMenu.unity
 
----
+# 4. Press Play
+```
 
-## 9. Project Goals and Non-Goals
+### Build
 
-### Goals
-
-- Demonstrate RTOS scheduling concepts visually
-- Show the relationship between OS, tasks, and hardware
-- Provide a foundation for experimenting with scheduling algorithms
-- Create portfolio-quality code demonstrating systems programming knowledge
-
-### Non-Goals
-
-- Realistic flight dynamics or aerodynamics
-- Accurate avionics simulation
-- Multiplayer or networked operation
-- Production-ready RTOS implementation
-
-### Intentional Simplifications
-
-| Aspect | Simplification | Reason |
-|--------|---------------|--------|
-| Physics | Basic transform manipulation | Focus on RTOS, not physics |
-| Scheduling | Single-core simulation | Clarity over complexity |
-| Memory | C# garbage collection | Demonstration, not optimization |
-| Timing | Unity FixedUpdate-based | No access to hardware timers |
+```bash
+# Build for Windows
+File → Build Settings → Windows → Build
+```
 
 ---
 
-## 10. Future Work
+## 🎮 Controls
 
-### Scheduling Improvements
+### Flight Controls
 
-- Implement Rate Monotonic Scheduling (RMS)
-- Implement Earliest Deadline First (EDF)
-- Add priority inheritance protocol for mutexes
-- Simulate priority inversion scenarios
+| Key | Action |
+|-----|--------|
+| `W` / `S` | Pitch (Up/Down) |
+| `A` / `D` | Roll (Left/Right) |
+| `Q` / `E` | Yaw (Left/Right) |
+| `Shift` | Throttle Up |
+| `Ctrl` | Throttle Down |
 
-### Visualization Enhancements
+### Combat Controls
 
-- Real-time Gantt chart of task execution
-- Deadline miss highlighting
-- CPU utilization graph
-- Task state transition diagram
+| Key | Action |
+|-----|--------|
+| `Space` | Fire Missile |
+| `Tab` | Switch Target |
+| `F` | Deploy Flare |
+| `G` | Deploy Chaff |
 
-### Advanced Features
+### Camera Controls
 
-- Multiple aircraft (multiple RTOS instances)
-- Multi-core scheduling simulation
-- Configurable task sets via UI
-- Scenario loading (demonstrate specific scheduling problems)
-
-### Testing
-
-- Unit tests for kernel components
-- Automated scheduling verification
-- Performance benchmarks
-
----
-
-## License
-
-This project is provided for educational and portfolio purposes.
+| Key | Action |
+|-----|--------|
+| `C` | Switch Camera View |
+| `Mouse` | Look Around (Cockpit) |
 
 ---
 
-## Author
+## 👥 Team
 
-Developed as a demonstration of RTOS concepts and embedded systems design principles.
+<table>
+  <tr>
+    <td align="center">
+      <b>윤민석 (Minseok Yoon)</b><br/>
+      <sub>PNU CSE 21</sub><br/>
+      <sub>부산대학교 정보컴퓨터공학부</sub>
+    </td>
+    <td align="center">
+      <b>박정우 (Jungwoo Park)</b><br/>
+      <sub>HYU CSE 21</sub><br/>
+      <sub>한양대학교 컴퓨터소프트웨어학부</sub>
+    </td>
+  </tr>
+</table>
+
+### Project Info
+
+| | |
+|---|---|
+| **Program** | 2025 Winter KAIST Mad Camp (몰입캠프) |
+| **Week** | Week 3 Project |
+| **Period** | January 2025 |
+| **Theme** | RTOS Visualization & Game Development |
+
+---
+
+## 📄 License
+
+This project is developed for educational purposes as part of KAIST Mad Camp 2025 Winter.
+
+---
+
+<p align="center">
+  <b>⚡ Developed with passion at KAIST Mad Camp ⚡</b>
+</p>
