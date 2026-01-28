@@ -58,8 +58,8 @@ namespace RTOScope.Runtime.UI
         {
             InitStyles();
 
-            float boxWidth = 110;
-            float boxHeight = 38;
+            float boxWidth = 80;
+            float boxHeight = 42;
             float x = Screen.width - boxWidth - _position.x;
             float y = _position.y;
 
@@ -70,13 +70,9 @@ namespace RTOScope.Runtime.UI
             string scoreText = $"SCORE: {_currentScore}";
             string targetText = $"Targets: {_targetsDestroyed}/6";
 
-            // 그림자
-            GUI.Label(new Rect(x + 1, y + 1, boxWidth, 18), scoreText, _shadowStyle);
-            GUI.Label(new Rect(x + 1, y + 20, boxWidth, 18), targetText, _shadowStyle);
-
             // 메인 텍스트
-            GUI.Label(new Rect(x, y, boxWidth, 18), scoreText, _scoreStyle);
-            GUI.Label(new Rect(x, y + 19, boxWidth, 18), targetText, _scoreStyle);
+            GUI.Label(new Rect(x, y, boxWidth, 20), scoreText, _scoreStyle);
+            GUI.Label(new Rect(x, y + 20, boxWidth, 22), targetText, _scoreStyle);
         }
 
         private void InitStyles()

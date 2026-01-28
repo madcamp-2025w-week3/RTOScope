@@ -58,6 +58,8 @@ namespace RTOScope.Runtime.Hardware
         // 내부 상태
         // =====================================================================
 
+        private bool _isFlightSystemExpanded = true;
+
         private float _currentSpeed;
 
         public float CurrentSpeed => _currentSpeed;
@@ -194,9 +196,23 @@ namespace RTOScope.Runtime.Hardware
         {
             if (!_showDebugInfo || State == null) return;
 
-            // 조종석 HUD 정보 표시
-            int boxHeight = 280; // 높이 증가 (Range/Bingo 추가)
-            GUI.Box(new Rect(20, 20, 320, boxHeight), "RTOS FLIGHT SYSTEM v2.1");
+            // 접기/펼치기 버튼
+            int headerHeight = 25;
+            int expandedHeight = 280;
+            int boxHeight = _isFlightSystemExpanded ? expandedHeight : headerHeight;
+            
+            GUI.Box(new Rect(20, 20, 320, boxHeight), "");
+
+            // 헤더 (접기/펼치기 버튼 + 제목)
+            string toggleText = _isFlightSystemExpanded ? "▼" : "▶";
+            if (GUI.Button(new Rect(25, 22, 25, 20), toggleText))
+            {
+                _isFlightSystemExpanded = !_isFlightSystemExpanded;
+            }
+            GUI.Label(new Rect(55, 22, 280, 20), "<b>RTOS FLIGHT SYSTEM</b>");
+
+            // 접혀있으면 여기서 종료
+            if (!_isFlightSystemExpanded) return;
 
             int y = 45;
             int lineHeight = 18;

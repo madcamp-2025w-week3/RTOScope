@@ -25,11 +25,30 @@ namespace RTOScope.Runtime.UI
 
         [Header("Display Settings")]
         [SerializeField] private bool _showDashboard = true;
-        [SerializeField] private Rect _windowRect = new Rect(10, 100, 320, 500);
+        [SerializeField] private float _windowWidth = 320f;
+        [SerializeField] private float _expandedHeight = 500f;
+        [SerializeField] private float _collapsedHeight = 40f;
 
         private RTOSKernel _kernel;
         private KernelStatusInfo _status;
         private Vector2 _scrollPosition;
+        private bool _isExpanded = true;
+        private Rect _windowRect;
+        private bool _initialized = false;
+
+        private void Start()
+        {
+            InitializePosition();
+        }
+
+        private void InitializePosition()
+        {
+            // Score 박스 밑에 위치 (오른쪽 상단, Score 박스 아래)
+            float x = Screen.width - _windowWidth - 10f;
+            float y = 70f; // Score 박스 밑
+            _windowRect = new Rect(x, y, _windowWidth, _isExpanded ? _expandedHeight : _collapsedHeight);
+            _initialized = true;
+        }
 
         private void Update()
         {
@@ -44,11 +63,34 @@ namespace RTOScope.Runtime.UI
         {
             if (!_showDashboard || _kernel == null) return;
 
-            _windowRect = GUI.Window(0, _windowRect, DrawDashboard, "RTOS Dashboard");
+            if (!_initialized)
+            {
+                InitializePosition();
+            }
+
+            // 창 높이 업데이트
+            _windowRect.height = _isExpanded ? _expandedHeight : _collapsedHeight;
+
+            _windowRect = GUI.Window(0, _windowRect, DrawDashboard, "");
         }
 
         private void DrawDashboard(int windowId)
         {
+            // 상단 헤더 (접기/펼치기 버튼) - 고정 위치 사용
+            string toggleText = _isExpanded ? "▼" : "▶";
+            if (GUI.Button(new Rect(5, 2, 25, 20), toggleText))
+            {
+                _isExpanded = !_isExpanded;
+            }
+            GUI.Label(new Rect(35, 2, 280, 20), "<b>RTOS Dashboard</b>");
+
+            // 접혀있으면 여기서 종료
+            if (!_isExpanded)
+            {
+                GUI.DragWindow();
+                return;
+            }
+
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition);
 
             // === Kernel Status ===
