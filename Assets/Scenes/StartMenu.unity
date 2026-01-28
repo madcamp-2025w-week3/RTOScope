@@ -476,6 +476,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _singleSceneName: main
   _multiSceneName: main
+  _tutorialSceneName: main
   _menuRoot: {fileID: 0}
   _schedulerDropdown: {fileID: 2022828738}
 --- !u!4 &1111366411

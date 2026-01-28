@@ -21,6 +21,7 @@ namespace RTOScope.Runtime.UI
         [Header("Scene Names")]
         [SerializeField] private string _singleSceneName = "main";
         [SerializeField] private string _multiSceneName = "main";
+        [SerializeField] private string _tutorialSceneName = "main";
 
         [Header("Menu Root (Optional)")]
         [SerializeField] private GameObject _menuRoot;
@@ -35,6 +36,10 @@ namespace RTOScope.Runtime.UI
             EnsureGameSettings();
 
             ResetPersistentState();
+            if (GameSettings.Instance != null)
+            {
+                GameSettings.Instance.TutorialMode = false;
+            }
 
             // 드롭다운 초기화
             if (_schedulerDropdown != null)
@@ -72,14 +77,32 @@ namespace RTOScope.Runtime.UI
 
         public void OnClickSingle()
         {
+            if (GameSettings.Instance != null)
+            {
+                GameSettings.Instance.TutorialMode = false;
+            }
             ApplySchedulerSelection();
             LoadScene(_singleSceneName);
         }
 
         public void OnClickMulti()
         {
+            if (GameSettings.Instance != null)
+            {
+                GameSettings.Instance.TutorialMode = false;
+            }
             ApplySchedulerSelection();
             LoadScene(_multiSceneName);
+        }
+
+        public void OnClickTutorial()
+        {
+            if (GameSettings.Instance != null)
+            {
+                GameSettings.Instance.TutorialMode = true;
+            }
+            ApplySchedulerSelection();
+            LoadScene(string.IsNullOrEmpty(_tutorialSceneName) ? _singleSceneName : _tutorialSceneName);
         }
 
         private void LoadScene(string sceneName)

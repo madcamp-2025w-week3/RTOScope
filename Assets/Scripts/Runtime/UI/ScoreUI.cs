@@ -1,19 +1,20 @@
 /*
- * ScoreUI.cs - 점수 표시 UI
+ * ScoreUI.cs - ?? ?? UI
  *
- * [역할]
- * - 화면 오른쪽 상단에 점수 표시
- * - ScoreManager 이벤트 구독하여 실시간 업데이트
+ * [??]
+ * - ?? ??? ??? ??/?? ??? ??
+ * - ScoreManager ??? ??
  */
 
 using RTOScope.Runtime.Game;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace RTOScope.Runtime.UI
 {
     public class ScoreUI : MonoBehaviour
     {
-        [Header("UI 설정")]
+        [Header("UI ??")]
         [SerializeField] private Vector2 _position = new Vector2(10, 10);
         [SerializeField] private int _fontSize = 16;
         [SerializeField] private Color _textColor = Color.white;
@@ -23,25 +24,80 @@ namespace RTOScope.Runtime.UI
         private GUIStyle _shadowStyle;
         private int _currentScore = 0;
         private int _targetsDestroyed = 0;
+        private bool _subscribed = false;
 
-        private void Start()
+        private void Awake()
         {
-            // ScoreManager 이벤트 구독
-            if (ScoreManager.Instance != null)
+            SceneManager.sceneLoaded += OnSceneLoaded;
+        }
+
+        private void OnEnable()
+        {
+            ApplyVisibilityForScene(SceneManager.GetActiveScene());
+            if (enabled)
             {
-                ScoreManager.Instance.OnScoreChanged += OnScoreChanged;
-                ScoreManager.Instance.OnTargetDestroyed += OnTargetDestroyed;
+                Subscribe();
             }
+        }
+
+        private void OnDisable()
+        {
+            Unsubscribe();
         }
 
         private void OnDestroy()
         {
-            // 이벤트 구독 해제
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+            Unsubscribe();
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ApplyVisibilityForScene(scene);
+        }
+
+        private void ApplyVisibilityForScene(Scene scene)
+        {
+            if (scene.name == "StartMenu")
+            {
+                gameObject.SetActive(false);
+                return;
+            }
+
+            bool tutorialMode = GameSettings.Instance != null && GameSettings.Instance.TutorialMode;
+            gameObject.SetActive(true);
+            enabled = !tutorialMode;
+
+            if (!tutorialMode)
+            {
+                Subscribe();
+            }
+            else
+            {
+                Unsubscribe();
+            }
+        }
+
+        private void Subscribe()
+        {
+            if (_subscribed) return;
+            if (ScoreManager.Instance == null) return;
+            ScoreManager.Instance.OnScoreChanged += OnScoreChanged;
+            ScoreManager.Instance.OnTargetDestroyed += OnTargetDestroyed;
+            _currentScore = ScoreManager.Instance.Score;
+            _targetsDestroyed = ScoreManager.Instance.TargetsDestroyed;
+            _subscribed = true;
+        }
+
+        private void Unsubscribe()
+        {
+            if (!_subscribed) return;
             if (ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.OnScoreChanged -= OnScoreChanged;
                 ScoreManager.Instance.OnTargetDestroyed -= OnTargetDestroyed;
             }
+            _subscribed = false;
         }
 
         private void OnScoreChanged(int newScore)
@@ -63,25 +119,20 @@ namespace RTOScope.Runtime.UI
             float x = Screen.width - boxWidth - _position.x;
             float y = _position.y;
 
-            // 배경 박스
             GUI.Box(new Rect(x - 5, y - 3, boxWidth + 10, boxHeight + 6), "");
 
-            // 점수 텍스트
             string scoreText = $"SCORE: {_currentScore}";
             string targetText = $"Targets: {_targetsDestroyed}/6";
 
-            // 그림자
             GUI.Label(new Rect(x + 1, y + 1, boxWidth, 18), scoreText, _shadowStyle);
             GUI.Label(new Rect(x + 1, y + 20, boxWidth, 18), targetText, _shadowStyle);
 
-            // 메인 텍스트
             GUI.Label(new Rect(x, y, boxWidth, 18), scoreText, _scoreStyle);
             GUI.Label(new Rect(x, y + 19, boxWidth, 18), targetText, _scoreStyle);
         }
 
         private void InitStyles()
         {
-            // 매번 새로 생성
             _scoreStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 12,

@@ -100,7 +100,7 @@ GameObject:
   - component: {fileID: 8833177062947783969}
   - component: {fileID: 9155960788891486178}
   m_Layer: 5
-  m_Name: Multi Mode
+  m_Name: Tutorial
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -270,7 +270,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: RTOScope.Runtime.UI.StartMenuController, Assembly-CSharp
-        m_MethodName: OnClickMulti
+        m_MethodName: OnClickTutorial
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
