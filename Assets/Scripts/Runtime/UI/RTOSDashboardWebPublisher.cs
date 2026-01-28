@@ -63,8 +63,19 @@ namespace RTOScope.Runtime.UI
             };
 
             var tasks = _kernel.GetAllTasks();
+            float totalExecTime = 0f;
             foreach (var tcb in tasks)
             {
+                totalExecTime += tcb.TotalExecutionTime;
+            }
+
+            foreach (var tcb in tasks)
+            {
+                // CPU 사용량 계산: 해당 태스크의 실행시간 / 전체 실행시간 * 100
+                float cpuPercent = totalExecTime > 0 
+                    ? (tcb.TotalExecutionTime / totalExecTime) * 100f 
+                    : 0f;
+
                 payload.tasks.Add(new RTOSDashboardTask
                 {
                     name = tcb.Task.Name,
@@ -72,7 +83,9 @@ namespace RTOScope.Runtime.UI
                     priority = (int)tcb.BasePriority,
                     currentStep = tcb.Task.CurrentStep,
                     totalSteps = tcb.Task.TotalSteps,
-                    periodMs = Mathf.RoundToInt(tcb.Period * 1000f)
+                    periodMs = Mathf.RoundToInt(tcb.Period * 1000f),
+                    cpuUsage = cpuPercent,
+                    missCount = tcb.DeadlineMissCount
                 });
             }
 
@@ -130,6 +143,8 @@ namespace RTOScope.Runtime.UI
             public int currentStep;
             public int totalSteps;
             public int periodMs;
+            public float cpuUsage;
+            public int missCount;
         }
     }
 }
