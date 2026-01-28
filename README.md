@@ -16,8 +16,8 @@
 ## 📺 Demo Video
 
 <p align="center">
-  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID">
-    <img src="https://img.youtube.com/vi/YOUR_VIDEO_ID/maxresdefault.jpg" alt="RTOScope Demo" width="600"/>
+  <a href="https://www.youtube.com/watch?v=k19qpml2WBg">
+    <img src="https://img.youtube.com/vi/k19qpml2WBg/maxresdefault.jpg" alt="RTOScope Demo" width="600"/>
   </a>
 </p>
 
