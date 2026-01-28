@@ -85,7 +85,7 @@ namespace RTOScope.RTOS.Tasks
         private const float CL_SLOPE = 6.28f;             // 양력 기울기 (rad⁻¹)
         private const float CL_MAX = 1.6f;                // 최대 양력 계수
         private const float CL_MIN = -1.0f;               // 최소 양력 계수
-        private const float CD_0 = 0.02f;                 // 기본 항력 계수 (Parasitic Drag)
+        private const float CD_0 = 0.04f;                 // 기본 항력 계수 (Parasitic Drag) - 현실적 감속을 위해 상향
         private const float STALL_ANGLE = 15f;            // 실속각 (도)
 
         // 엔진 상수
@@ -437,12 +437,42 @@ namespace RTOScope.RTOS.Tasks
 
         /// <summary>
         /// Step 4: 추력 계산
-        /// Thrust = Lerp(IDLE_THRUST, MAX_THRUST, throttle)
+        /// 현실적인 스로틀-추력 관계:
+        /// - 0~40%: 강한 감속 영역
+        /// - 40~60%: 약한 감속~순항 영역
+        /// - 60~100%: 가속 영역
         /// </summary>
         private void ComputeThrust()
         {
-            // 스로틀에 따른 추력 보간
-            _thrustForce = Mathf.Lerp(IDLE_THRUST, MAX_THRUST, _throttleInput);
+            // 현실적인 추력 곡선:
+            // 저스로틀(0~40%)에서는 추력이 거의 없어 감속
+            // 중스로틀(40~60%)에서 순항 유지
+            // 고스로틀(60~100%)에서 가속
+            
+            const float LOW_THROTTLE = 0.40f;   // 감속 영역 상한
+            const float CRUISE_THROTTLE = 0.55f; // 순항 스로틀
+            
+            float effectiveThrottle;
+            
+            if (_throttleInput < LOW_THROTTLE)
+            {
+                // 0~40% → 0~20% 추력 (강한 감속)
+                effectiveThrottle = (_throttleInput / LOW_THROTTLE) * 0.20f;
+            }
+            else if (_throttleInput < CRUISE_THROTTLE)
+            {
+                // 40~55% → 20~40% 추력 (약한 감속~순항)
+                float t = (_throttleInput - LOW_THROTTLE) / (CRUISE_THROTTLE - LOW_THROTTLE);
+                effectiveThrottle = 0.20f + t * 0.20f;
+            }
+            else
+            {
+                // 55~100% → 40~100% 추력 (순항~가속)
+                float t = (_throttleInput - CRUISE_THROTTLE) / (1f - CRUISE_THROTTLE);
+                effectiveThrottle = 0.40f + t * 0.60f;
+            }
+            
+            _thrustForce = Mathf.Lerp(IDLE_THRUST, MAX_THRUST, effectiveThrottle);
         }
 
         /// <summary>
