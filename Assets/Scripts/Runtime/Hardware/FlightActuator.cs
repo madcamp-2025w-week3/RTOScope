@@ -195,7 +195,7 @@ namespace RTOScope.Runtime.Hardware
             if (!_showDebugInfo || State == null) return;
 
             // 조종석 HUD 정보 표시
-            int boxHeight = 220; // 높이 증가 (온도 추가)
+            int boxHeight = 280; // 높이 증가 (Range/Bingo 추가)
             GUI.Box(new Rect(20, 20, 320, boxHeight), "RTOS FLIGHT SYSTEM v2.1");
 
             int y = 45;
@@ -261,6 +261,26 @@ namespace RTOScope.Runtime.Hardware
             GUI.Label(new Rect(30, y, 300, lineHeight), tempStr);
 
             GUI.color = prevColor;
+            y += lineHeight;
+
+            // Range/Endurance 정보
+            GUI.Label(new Rect(30, y, 300, lineHeight),
+                $"Range: {State.RangeKm:F0} km  |  Time: {State.EnduranceMinutes:F0} min");
+            y += lineHeight;
+
+            // Bingo/Joker Fuel 경고
+            if (State.BingoFuel)
+            {
+                GUI.color = Color.red;
+                GUI.Label(new Rect(30, y, 300, lineHeight), "⚠️ BINGO FUEL - CRASH WARNING!");
+                GUI.color = prevColor;
+            }
+            else if (State.JokerFuel)
+            {
+                GUI.color = Color.yellow;
+                GUI.Label(new Rect(30, y, 300, lineHeight), "⚠️ JOKER FUEL - Low Fuel Warning");
+                GUI.color = prevColor;
+            }
         }
     }
 }

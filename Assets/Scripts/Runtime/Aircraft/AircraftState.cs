@@ -173,6 +173,22 @@ namespace RTOScope.Runtime.Aircraft
         public float ThrottleLimit { get; set; }
 
         // =====================================================================
+        // Range Estimator (비행 가능 범위 계산)
+        // =====================================================================
+
+        /// <summary>남은 비행 가능 시간 (분)</summary>
+        public float EnduranceMinutes { get; set; }
+
+        /// <summary>남은 비행 가능 거리 (km)</summary>
+        public float RangeKm { get; set; }
+
+        /// <summary>Bingo Fuel 경고 (귀환 필요)</summary>
+        public bool BingoFuel { get; set; }
+
+        /// <summary>Joker Fuel 경고 (연료 주의)</summary>
+        public bool JokerFuel { get; set; }
+
+        // =====================================================================
         // 엔진 온도/과열 상태
         // =====================================================================
 

@@ -79,6 +79,7 @@ namespace RTOScope.Runtime.Bootstrap
         private CountermeasureControlTask _countermeasureControlTask;
         private EngineHealthTask _engineHealthTask;
         private StoresManagementTask _storesManagementTask;
+        private RangeEstimatorTask _rangeEstimatorTask;
 
         // =====================================================================
         // 프로퍼티
@@ -161,6 +162,7 @@ namespace RTOScope.Runtime.Bootstrap
             _countermeasureControlTask = new CountermeasureControlTask(_state);
             _engineHealthTask = new EngineHealthTask(_state);
             _storesManagementTask = new StoresManagementTask(_state);
+            _rangeEstimatorTask = new RangeEstimatorTask(_state);
 
             // -----------------------------------------------------------------
             // 4. 태스크 등록 (TCB 기반 - 우선순위, 주기, 데드라인 설정)
@@ -244,6 +246,15 @@ namespace RTOScope.Runtime.Bootstrap
                 priority: TaskPriority.Medium,
                 period: 0.1f,           // 100ms (10Hz)
                 deadline: 0.15f,        // 150ms
+                deadlineType: DeadlineType.Soft
+            );
+
+            // RangeEstimatorTask: 낮은 우선순위, 2Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _rangeEstimatorTask,
+                priority: TaskPriority.Low,
+                period: 0.5f,           // 500ms (2Hz)
+                deadline: 1.0f,         // 1s
                 deadlineType: DeadlineType.Soft
             );
 
