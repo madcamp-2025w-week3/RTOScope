@@ -19,6 +19,9 @@ namespace RTOScope.Runtime.Game
         // 선택된 스케줄러 타입
         public SchedulerType SelectedScheduler { get; set; } = SchedulerType.Priority;
 
+        // 튜토리얼 모드 플래그
+        public bool TutorialMode { get; set; } = false;
+
         private void Awake()
         {
             if (Instance == null)

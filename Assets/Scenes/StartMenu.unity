@@ -544,6 +544,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _singleSceneName: main
   _multiSceneName: main
+  _tutorialSceneName: main
   _menuRoot: {fileID: 0}
   _schedulerDropdown: {fileID: 2022828738}
 --- !u!4 &1111366411
@@ -835,46 +836,6 @@ PrefabInstance:
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
       objectReference: {fileID: 1111366410}
-    - target: {fileID: 7738909686841683581, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.9919028
-      objectReference: {fileID: 0}
-    - target: {fileID: 7738909686841683581, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 7738909686841683581, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4294966528
-      objectReference: {fileID: 0}
-    - target: {fileID: 8833177062947783969, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor.g
-      value: 0.9872341
-      objectReference: {fileID: 0}
-    - target: {fileID: 8833177062947783969, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor.r
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8833177062947783969, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_fontColor32.rgba
-      value: 4294966272
-      objectReference: {fileID: 0}
-    - target: {fileID: 9137612815407505065, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_Color.b
-      value: 0.9103774
-      objectReference: {fileID: 0}
-    - target: {fileID: 9137612815407505065, guid: ac88cea06d5804fe3aef2d069ccf1da7,
-        type: 3}
-      propertyPath: m_Color.r
-      value: 0.9410547
-      objectReference: {fileID: 0}
     - target: {fileID: 9155960788891486178, guid: ac88cea06d5804fe3aef2d069ccf1da7,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
@@ -894,3 +855,5 @@ SceneRoots:
   - {fileID: 1505975391204527931}
   - {fileID: 1499790698}
   - {fileID: 616666783}
+  - {fileID: 203569511}
+  - {fileID: 1111366411}
