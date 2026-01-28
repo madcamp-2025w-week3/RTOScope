@@ -114,8 +114,8 @@ namespace RTOScope.Runtime.UI
         {
             InitStyles();
 
-            float boxWidth = 110;
-            float boxHeight = 38;
+            float boxWidth = 80;
+            float boxHeight = 42;
             float x = Screen.width - boxWidth - _position.x;
             float y = _position.y;
 
