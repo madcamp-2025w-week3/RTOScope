@@ -279,11 +279,6 @@ namespace RTOScope.Runtime.Hardware
             GUI.color = prevColor;
             y += lineHeight;
 
-            // Range/Endurance 정보
-            GUI.Label(new Rect(30, y, 300, lineHeight),
-                $"Range: {State.RangeKm:F0} km  |  Time: {State.EnduranceMinutes:F0} min");
-            y += lineHeight;
-
             // Bingo/Joker Fuel 경고
             if (State.BingoFuel)
             {

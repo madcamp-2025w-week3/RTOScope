@@ -54,7 +54,7 @@ namespace RTOScope.RTOS.Tasks
         private static readonly string[] WEAPON_NAMES = { "Empty", "AIM-9", "AIM-120" };
 
         // 잼 확률 (발사 시도당)
-        private const float JAM_PROBABILITY = 0.1f; // 10% 확률
+        private const float JAM_PROBABILITY = 0f; // 잼 비활성화
 
         private const float DELTA_TIME = 0.1f; // 10Hz 기준
 
