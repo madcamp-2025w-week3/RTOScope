@@ -3,12 +3,16 @@
  *
  * [역할]
  * - 싱글/멀티 버튼 클릭 처리
+ * - 스케줄러 선택 드롭다운 처리
  * - 배경 이미지/타이틀/버튼과 연결
- * - BGM은 별도 MenuBGM이 담당
  */
 
+using RTOScope.RTOS.Kernel;
+using RTOScope.Runtime.Game;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+using TMPro;
 
 namespace RTOScope.Runtime.UI
 {
@@ -16,10 +20,52 @@ namespace RTOScope.Runtime.UI
     {
         [Header("Scene Names")]
         [SerializeField] private string _singleSceneName = "main";
-        [SerializeField] private string _multiSceneName = "main"; // 멀티 씬 준비 전 기본값
+        [SerializeField] private string _multiSceneName = "main";
 
         [Header("Menu Root (Optional)")]
         [SerializeField] private GameObject _menuRoot;
+
+        [Header("Scheduler Selection (Optional)")]
+        [Tooltip("TMP_Dropdown 또는 Dropdown 컴포넌트")]
+        [SerializeField] private TMP_Dropdown _schedulerDropdown;
+
+        private void Start()
+        {
+            // GameSettings 인스턴스 확인/생성
+            EnsureGameSettings();
+
+            // 드롭다운 초기화
+            if (_schedulerDropdown != null)
+            {
+                _schedulerDropdown.ClearOptions();
+                _schedulerDropdown.AddOptions(new System.Collections.Generic.List<string>
+                {
+                    "Priority",
+                    "Round Robin",
+                    "FCFS",
+                    "SJF"
+                });
+                _schedulerDropdown.value = 0;
+                _schedulerDropdown.onValueChanged.AddListener(OnSchedulerChanged);
+            }
+        }
+
+        private void EnsureGameSettings()
+        {
+            if (GameSettings.Instance == null)
+            {
+                GameObject go = new GameObject("GameSettings");
+                go.AddComponent<GameSettings>();
+            }
+        }
+
+        public void OnSchedulerChanged(int index)
+        {
+            if (GameSettings.Instance != null)
+            {
+                GameSettings.Instance.SetSchedulerByIndex(index);
+            }
+        }
 
         public void OnClickSingle()
         {
@@ -48,3 +94,4 @@ namespace RTOScope.Runtime.UI
         }
     }
 }
+

@@ -84,7 +84,7 @@ namespace RTOScope.Runtime.UI
             // 매번 새로 생성
             _scoreStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = 12,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperRight
             };

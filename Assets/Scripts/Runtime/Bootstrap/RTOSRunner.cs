@@ -19,6 +19,7 @@ using RTOScope.RTOS.Kernel;
 using RTOScope.RTOS.Tasks;
 using RTOScope.Runtime.Aircraft;
 using RTOScope.Runtime.Hardware;
+using RTOScope.Runtime.Game;
 using UnityEngine;
 
 namespace RTOScope.Runtime.Bootstrap
@@ -340,9 +341,15 @@ namespace RTOScope.Runtime.Bootstrap
             }
 
             // -----------------------------------------------------------------
-            // 8. 스케줄러 설정
+            // 8. 스케줄러 설정 (GameSettings에서 선택한 값 우선)
             // -----------------------------------------------------------------
-            _kernel.SetScheduler(_schedulerType);
+            SchedulerType schedulerToUse = _schedulerType;
+            if (GameSettings.Instance != null)
+            {
+                schedulerToUse = GameSettings.Instance.SelectedScheduler;
+                Debug.Log($"[RTOSRunner] GameSettings에서 스케줄러 로드: {schedulerToUse}");
+            }
+            _kernel.SetScheduler(schedulerToUse);
         }
 
         /// <summary>RTOS 시작</summary>
