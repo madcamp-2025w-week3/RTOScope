@@ -9,6 +9,7 @@
 
 using HomingMissile;
 using RTOScope.Runtime.Aircraft;
+using RTOScope.Runtime.Game;
 using RTOScope.Runtime.UI;
 using UnityEngine;
 
@@ -198,20 +199,27 @@ namespace RTOScope.Runtime.Hardware
 
             missile.usemissile();
 
-            DisableHardpointVisual(launchPoint);
-
-            // 탄약 차감: MissileCount와 HardpointAmmoCount 모두 차감
-            State.MissileCount = Mathf.Max(0, State.MissileCount - 1);
-
-            // 하드포인트별 탄약도 차감 (StoresManagementTask와 동기화)
-            if (State.HardpointAmmoCount != null && index < State.HardpointAmmoCount.Length)
+            bool tutorialMode = GameSettings.Instance != null && GameSettings.Instance.TutorialMode;
+            if (!tutorialMode)
             {
-                State.HardpointAmmoCount[index] = Mathf.Max(0, State.HardpointAmmoCount[index] - 1);
+                DisableHardpointVisual(launchPoint);
             }
 
-            if (_hudController != null)
+            if (!tutorialMode)
             {
-                _hudController.ConsumeMissile(1);
+                // 탄약 차감: MissileCount와 HardpointAmmoCount 모두 차감
+                State.MissileCount = Mathf.Max(0, State.MissileCount - 1);
+
+                // 하드포인트별 탄약도 차감 (StoresManagementTask와 동기화)
+                if (State.HardpointAmmoCount != null && index < State.HardpointAmmoCount.Length)
+                {
+                    State.HardpointAmmoCount[index] = Mathf.Max(0, State.HardpointAmmoCount[index] - 1);
+                }
+
+                if (_hudController != null)
+                {
+                    _hudController.ConsumeMissile(1);
+                }
             }
 
             State.WeaponFireAck = true;

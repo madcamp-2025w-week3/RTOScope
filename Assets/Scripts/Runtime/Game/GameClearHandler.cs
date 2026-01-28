@@ -32,6 +32,14 @@ namespace RTOScope.Runtime.Game
 
         private void Start()
         {
+            if (GameSettings.Instance != null && GameSettings.Instance.TutorialMode)
+            {
+                if (clearRoot != null)
+                    clearRoot.SetActive(false);
+                enabled = false;
+                return;
+            }
+
             if (ScoreManager.Instance != null)
             {
                 ScoreManager.Instance.OnScoreChanged += OnScoreChanged;

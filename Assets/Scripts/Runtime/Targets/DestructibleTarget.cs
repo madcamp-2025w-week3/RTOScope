@@ -7,6 +7,7 @@
  * - 시각적 효과 (폭발)
  */
 
+using System.Collections.Generic;
 using RTOScope.Runtime.Game;
 using UnityEngine;
 
@@ -28,6 +29,7 @@ namespace RTOScope.Runtime.Targets
         [SerializeField] private bool _logCollisions = true;
 
         private bool _isDestroyed = false;
+        private readonly HashSet<int> _handledMissiles = new HashSet<int>();
 
         private void Start()
         {
@@ -88,7 +90,17 @@ namespace RTOScope.Runtime.Targets
 
         private void HandleDestruction(GameObject missile)
         {
-            _isDestroyed = true;
+            bool tutorialMode = GameSettings.Instance != null && GameSettings.Instance.TutorialMode;
+            if (tutorialMode)
+            {
+                int id = missile != null ? missile.GetInstanceID() : 0;
+                if (id != 0 && !_handledMissiles.Add(id))
+                    return;
+            }
+            else
+            {
+                _isDestroyed = true;
+            }
 
             if (_logCollisions)
             {
@@ -118,13 +130,16 @@ namespace RTOScope.Runtime.Targets
             }
 
             // 부모 오브젝트 파괴 (ArcheryTarget 전체 삭제)
-            if (transform.parent != null)
+            if (!tutorialMode)
             {
-                Destroy(transform.parent.gameObject);
-            }
-            else
-            {
-                Destroy(gameObject);
+                if (transform.parent != null)
+                {
+                    Destroy(transform.parent.gameObject);
+                }
+                else
+                {
+                    Destroy(gameObject);
+                }
             }
         }
 

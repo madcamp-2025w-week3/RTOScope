@@ -152,6 +152,7 @@ namespace RTOScope.Runtime.Bootstrap
             // 1. 공유 상태 생성
             // -----------------------------------------------------------------
             _state = new AircraftState();
+            bool tutorialMode = GameSettings.Instance != null && GameSettings.Instance.TutorialMode;
 
             // -----------------------------------------------------------------
             // 2. 커널 생성
@@ -222,13 +223,16 @@ namespace RTOScope.Runtime.Bootstrap
             );
 
             // FuelManagementTask: 중간 우선순위, 2Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _fuelManagementTask,
-                priority: TaskPriority.Medium,
-                period: 0.5f,           // 500ms (2Hz) - 스케줄러 비교용 조정
-                deadline: 0.5f,
-                deadlineType: DeadlineType.Soft
-            );
+            if (!tutorialMode)
+            {
+                _kernel.RegisterTask(
+                    task: _fuelManagementTask,
+                    priority: TaskPriority.Medium,
+                    period: 0.5f,           // 500ms (2Hz) - 스케줄러 비교용 조정
+                    deadline: 0.5f,
+                    deadlineType: DeadlineType.Soft
+                );
+            }
 
             // CountermeasureControlTask: 높은 우선순위, 10Hz, Soft Deadline
             _kernel.RegisterTask(
@@ -240,31 +244,40 @@ namespace RTOScope.Runtime.Bootstrap
             );
 
             // EngineHealthTask: 중간 우선순위, 5Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _engineHealthTask,
-                priority: TaskPriority.Medium,
-                period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
-                deadline: 0.3f,
-                deadlineType: DeadlineType.Soft
-            );
+            if (!tutorialMode)
+            {
+                _kernel.RegisterTask(
+                    task: _engineHealthTask,
+                    priority: TaskPriority.Medium,
+                    period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
+                    deadline: 0.3f,
+                    deadlineType: DeadlineType.Soft
+                );
+            }
 
             // StoresManagementTask: 중간 우선순위, 5Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _storesManagementTask,
-                priority: TaskPriority.Medium,
-                period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
-                deadline: 0.3f,
-                deadlineType: DeadlineType.Soft
-            );
+            if (!tutorialMode)
+            {
+                _kernel.RegisterTask(
+                    task: _storesManagementTask,
+                    priority: TaskPriority.Medium,
+                    period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
+                    deadline: 0.3f,
+                    deadlineType: DeadlineType.Soft
+                );
+            }
 
             // RangeEstimatorTask: 낮은 우선순위, 1Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _rangeEstimatorTask,
-                priority: TaskPriority.Low,
-                period: 1.0f,           // 1000ms (1Hz) - 스케줄러 비교용 조정
-                deadline: 1.5f,
-                deadlineType: DeadlineType.Soft
-            );
+            if (!tutorialMode)
+            {
+                _kernel.RegisterTask(
+                    task: _rangeEstimatorTask,
+                    priority: TaskPriority.Low,
+                    period: 1.0f,           // 1000ms (1Hz) - 스케줄러 비교용 조정
+                    deadline: 1.5f,
+                    deadlineType: DeadlineType.Soft
+                );
+            }
 
             // -----------------------------------------------------------------
             // 5. HAL 연결 (AircraftState 주입)
@@ -316,7 +329,10 @@ namespace RTOScope.Runtime.Bootstrap
             _flightControlTask.SetState(_state);
             _weaponControlTask.SetState(_state);
             _collisionAvoidanceTask.SetState(_state);
-            _fuelManagementTask.SetState(_state);
+            if (!tutorialMode)
+            {
+                _fuelManagementTask.SetState(_state);
+            }
 
             // -----------------------------------------------------------------
             // 7. 초기 비행 상태 설정 (비행 중 시작)
@@ -335,7 +351,7 @@ namespace RTOScope.Runtime.Bootstrap
 
             if (_logInitialization)
             {
-                RTOSDebug.Log("[RTOSRunner] RTOS 초기화 완료 - 5개 태스크 등록됨 (+ IdleTask)");
+                RTOSDebug.Log($"[RTOSRunner] RTOS 초기화 완료 - {(tutorialMode ? "튜토리얼 모드 (일부 태스크 비활성화)" : "5개 태스크 등록됨 (+ IdleTask)")}");
                 RTOSDebug.Log($"[RTOSRunner] FixedUpdate 사용: {_useFixedUpdate}, Fixed Timestep: {Time.fixedDeltaTime * 1000f:F1}ms");
                 RTOSDebug.Log($"[RTOSRunner] 스케줄러: {_kernel.Scheduler.Name}");
             }
