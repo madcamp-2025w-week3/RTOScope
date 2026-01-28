@@ -252,7 +252,7 @@ namespace RTOScope.Runtime.Hardware
             // 대응책 입력 (플레어/채프)
             // -----------------------------------------------------------------
             State.FlareInput = Input.GetKey(KeyCode.Z);  // Z: 플레어
-            State.ChaffInput = Input.GetKey(KeyCode.C);  // C: 채프
+            State.ChaffInput = Input.GetKey(KeyCode.X);  // X: 채프
         }
 
         // =====================================================================
