@@ -34,6 +34,8 @@ namespace RTOScope.Runtime.UI
             // GameSettings 인스턴스 확인/생성
             EnsureGameSettings();
 
+            ResetPersistentState();
+
             // 드롭다운 초기화
             if (_schedulerDropdown != null)
             {
@@ -45,8 +47,9 @@ namespace RTOScope.Runtime.UI
                     "FCFS",
                     "SJF"
                 });
-                _schedulerDropdown.value = 0;
+                _schedulerDropdown.value = GameSettings.Instance != null ? (int)GameSettings.Instance.SelectedScheduler : 0;
                 _schedulerDropdown.onValueChanged.AddListener(OnSchedulerChanged);
+                OnSchedulerChanged(_schedulerDropdown.value);
             }
         }
 
@@ -69,11 +72,13 @@ namespace RTOScope.Runtime.UI
 
         public void OnClickSingle()
         {
+            ApplySchedulerSelection();
             LoadScene(_singleSceneName);
         }
 
         public void OnClickMulti()
         {
+            ApplySchedulerSelection();
             LoadScene(_multiSceneName);
         }
 
@@ -91,6 +96,22 @@ namespace RTOScope.Runtime.UI
             }
 
             SceneManager.LoadScene(sceneName, LoadSceneMode.Single);
+        }
+
+        private void ApplySchedulerSelection()
+        {
+            if (_schedulerDropdown != null)
+            {
+                OnSchedulerChanged(_schedulerDropdown.value);
+            }
+        }
+
+        private void ResetPersistentState()
+        {
+            if (ScoreManager.Instance != null)
+            {
+                ScoreManager.Instance.ResetScore();
+            }
         }
     }
 }
