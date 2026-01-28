@@ -43,6 +43,13 @@ namespace RTOScope.Runtime.UI
         [Tooltip("크기 변화 속도")]
         [SerializeField] private float _pulseSpeed = 2f;
 
+        [Header("타이밍 오프셋")]
+        [Tooltip("각 전투기마다 다른 값을 설정하면 서로 다르게 움직임 (0~10)")]
+        [SerializeField] private float _timeOffset = 0f;
+        
+        [Tooltip("시작 시 랜덤 오프셋 자동 적용")]
+        [SerializeField] private bool _randomOffset = true;
+
         // RectTransform 참조
         private RectTransform _rectTransform;
         
@@ -61,11 +68,18 @@ namespace RTOScope.Runtime.UI
             _initialPosition = _rectTransform.anchoredPosition;
             _initialRotation = _rectTransform.localRotation;
             _initialScale = _rectTransform.localScale;
+
+            // 랜덤 오프셋 자동 적용
+            if (_randomOffset)
+            {
+                _timeOffset = Random.Range(0f, 10f);
+            }
         }
 
         private void Update()
         {
-            float time = Time.time;
+            // 오프셋이 적용된 시간
+            float time = Time.time + _timeOffset;
 
             // ===== 위치 애니메이션 =====
             
