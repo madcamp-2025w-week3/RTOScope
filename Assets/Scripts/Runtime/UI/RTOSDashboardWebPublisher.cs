@@ -59,6 +59,7 @@ namespace RTOScope.Runtime.UI
                 readyTaskCount = _status.ReadyTaskCount,
                 contextSwitchCount = _status.ContextSwitchCount,
                 currentTaskName = _status.CurrentTaskName,
+                schedulerName = _kernel.Scheduler?.Name ?? "Unknown",
                 tasks = new List<RTOSDashboardTask>()
             };
 
@@ -130,6 +131,7 @@ namespace RTOScope.Runtime.UI
             public int readyTaskCount;
             public int contextSwitchCount;
             public string currentTaskName;
+            public string schedulerName;
             public List<RTOSDashboardTask> tasks;
             public RTOSDashboardTask idle;
         }

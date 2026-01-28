@@ -54,10 +54,10 @@ namespace RTOScope.RTOS.Tasks
         private const float CRITICAL_TEMP = 850f;        // 과열 위험 온도 (°C)
         private const float MAX_TEMP = 1000f;            // 엔진 손상 온도 (°C)
 
-        // 온도 변화율
-        private const float HEAT_RATE_FACTOR = 150f;     // 가열 계수 (°C/s at 100% throttle)
-        private const float COOL_RATE_FACTOR = 30f;      // 냉각 계수 (°C/s)
-        private const float AFTERBURNER_HEAT_MULT = 2.5f; // 애프터버너 배수 (90% 이상 스로틀)
+        // 온도 변화율 (더 현실적인 속도로 조정)
+        private const float HEAT_RATE_FACTOR = 50f;      // 가열 계수 (°C/s at 100% throttle) - 기존 150에서 조정
+        private const float COOL_RATE_FACTOR = 15f;      // 냉각 계수 (°C/s) - 기존 30에서 조정
+        private const float AFTERBURNER_HEAT_MULT = 2.0f; // 애프터버너 배수 (90% 이상 스로틀)
 
         // 추력 제한
         private const float THRUST_LIMIT_START = 0.8f;   // 과열 시 추력 제한 시작 (80%)

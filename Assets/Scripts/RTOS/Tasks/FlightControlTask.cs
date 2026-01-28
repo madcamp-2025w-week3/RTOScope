@@ -437,12 +437,33 @@ namespace RTOScope.RTOS.Tasks
 
         /// <summary>
         /// Step 4: 추력 계산
-        /// Thrust = Lerp(IDLE_THRUST, MAX_THRUST, throttle)
+        /// 현실적인 스로틀-추력 관계:
+        /// - 0~50%: 감속 영역 (추력 < 항력)
+        /// - 50~60%: 순항 영역 (추력 ≈ 항력)
+        /// - 60~100%: 가속 영역 (추력 > 항력)
         /// </summary>
         private void ComputeThrust()
         {
-            // 스로틀에 따른 추력 보간
-            _thrustForce = Mathf.Lerp(IDLE_THRUST, MAX_THRUST, _throttleInput);
+            // 순항 유지 스로틀 (약 55%)
+            const float CRUISE_THROTTLE = 0.55f;
+            
+            // 스로틀을 비선형으로 매핑하여 더 현실적인 추력 곡선 생성
+            // 낮은 스로틀에서는 추력이 더 급격히 감소
+            float effectiveThrottle;
+            
+            if (_throttleInput < CRUISE_THROTTLE)
+            {
+                // 0~55% → 0~40% 추력 (감속 영역)
+                effectiveThrottle = (_throttleInput / CRUISE_THROTTLE) * 0.4f;
+            }
+            else
+            {
+                // 55~100% → 40~100% 추력 (순항~가속 영역)
+                float t = (_throttleInput - CRUISE_THROTTLE) / (1f - CRUISE_THROTTLE);
+                effectiveThrottle = 0.4f + t * 0.6f;
+            }
+            
+            _thrustForce = Mathf.Lerp(IDLE_THRUST, MAX_THRUST, effectiveThrottle);
         }
 
         /// <summary>
