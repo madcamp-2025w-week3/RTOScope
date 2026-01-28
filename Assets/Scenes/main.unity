@@ -1745,6 +1745,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 74753766469719897, guid: d31c4fed0df005e45a65d95d1ab5ffa0,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 380
+      objectReference: {fileID: 0}
     - target: {fileID: 1982887168468094909, guid: d31c4fed0df005e45a65d95d1ab5ffa0,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1844,6 +1849,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5817013529223011757, guid: d31c4fed0df005e45a65d95d1ab5ffa0,
+        type: 3}
+      propertyPath: m_fontColor32.rgba
+      value: 4281335610
       objectReference: {fileID: 0}
     - target: {fileID: 8054920367311482788, guid: d31c4fed0df005e45a65d95d1ab5ffa0,
         type: 3}
