@@ -245,7 +245,7 @@ namespace RTOScope.Runtime.Hardware
             // 무장 입력 (락온/브레이크락/발사)
             // -----------------------------------------------------------------
             State.LockOnInput = Input.GetKey(KeyCode.R);
-            State.BreakLockInput = Input.GetKey(KeyCode.X);
+            State.BreakLockInput = Input.GetKey(KeyCode.C);
             State.FireInput = Input.GetKey(KeyCode.F);
 
             // -----------------------------------------------------------------
