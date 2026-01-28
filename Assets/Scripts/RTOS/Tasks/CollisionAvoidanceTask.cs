@@ -28,11 +28,12 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_OUTPUT = 2;
         private const int TOTAL_STEPS = 3;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs = {
-            0.0003f, // Read
-            0.0006f, // Evaluate
-            0.0003f  // Output
-        };
+            0.002f,  // Read (2ms)
+            0.004f,  // Evaluate (4ms)
+            0.002f   // Output (2ms)
+        };           // 총 WCET: 8ms
 
         // 설정값 (단순 지면 충돌 기준)
         private const float MIN_SAFE_ALTITUDE = 120f; // meters

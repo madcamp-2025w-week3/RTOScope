@@ -34,13 +34,14 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_READY_STATE = 3;
         private const int TOTAL_STEPS = 4;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs =
         {
-            0.0002f, // Step 0: Inventory Check
-            0.0002f, // Step 1: Status Update
-            0.0003f, // Step 2: Jam Detection
-            0.0002f  // Step 3: Ready State
-        };
+            0.002f,  // Step 0: Inventory Check (2ms)
+            0.002f,  // Step 1: Status Update (2ms)
+            0.003f,  // Step 2: Jam Detection (3ms)
+            0.002f   // Step 3: Ready State (2ms)
+        };           // 총 WCET: 9ms
 
         // =====================================================================
         // 무장 타입 상수

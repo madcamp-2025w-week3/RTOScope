@@ -33,13 +33,14 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_COOLING_MANAGEMENT = 3;
         private const int TOTAL_STEPS = 4;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs =
         {
-            0.0002f, // Step 0: Temperature Calc
-            0.0002f, // Step 1: Overheat Detection
-            0.0002f, // Step 2: Thrust Limiting
-            0.0002f  // Step 3: Cooling
-        };
+            0.003f,  // Step 0: Temperature Calc (3ms)
+            0.002f,  // Step 1: Overheat Detection (2ms)
+            0.002f,  // Step 2: Thrust Limiting (2ms)
+            0.003f   // Step 3: Cooling (3ms)
+        };           // 총 WCET: 10ms
 
         // =====================================================================
         // 엔진 온도 상수

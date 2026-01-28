@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 using RTOScope.Runtime.Aircraft;
 
 namespace RTOScope.Runtime.Hardware
@@ -40,6 +41,9 @@ namespace RTOScope.Runtime.Hardware
         [SerializeField] private TMP_Text gameOverText;
         [SerializeField] private string deadMessage = "DEAD";
         [SerializeField] private string gameOverMessage = "GAME OVER";
+        [SerializeField] private bool returnToMenuAfterGameOver = true;
+        [SerializeField] private float returnToMenuDelay = 3f;
+        [SerializeField] private string menuSceneName = "StartMenu";
 
         [Header("Disable On Crash")]
         [SerializeField] private bool disableAircraftPhysics = true;
@@ -207,6 +211,13 @@ namespace RTOScope.Runtime.Hardware
             if (deadText != null) deadText.text = deadMessage;
             if (gameOverText != null) gameOverText.text = gameOverMessage;
             gameOverRoot.SetActive(true);
+
+            if (returnToMenuAfterGameOver && !string.IsNullOrEmpty(menuSceneName))
+            {
+                if (returnToMenuDelay > 0f)
+                    yield return new WaitForSeconds(returnToMenuDelay);
+                SceneManager.LoadScene(menuSceneName, LoadSceneMode.Single);
+            }
         }
     }
 }

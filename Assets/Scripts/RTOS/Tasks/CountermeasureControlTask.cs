@@ -34,13 +34,14 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_COOLDOWN_MANAGEMENT = 3;
         private const int TOTAL_STEPS = 4;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs =
         {
-            0.0003f, // Step 0: Threat Detection
-            0.0002f, // Step 1: Selection
-            0.0003f, // Step 2: Deploy
-            0.0002f  // Step 3: Cooldown
-        };
+            0.002f,  // Step 0: Threat Detection (2ms)
+            0.001f,  // Step 1: Selection (1ms)
+            0.002f,  // Step 2: Deploy (2ms)
+            0.001f   // Step 3: Cooldown (1ms)
+        };           // 총 WCET: 6ms
 
         // =====================================================================
         // 대응책 상수

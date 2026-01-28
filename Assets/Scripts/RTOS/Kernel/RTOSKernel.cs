@@ -23,6 +23,7 @@
 using System;
 using System.Collections.Generic;
 using RTOScope.RTOS.Tasks;
+using UnityEngine;
 
 namespace RTOScope.RTOS.Kernel
 {
@@ -60,6 +61,9 @@ namespace RTOScope.RTOS.Kernel
         private float _totalIdleTime;     // 총 Idle 시간
         private int _contextSwitchCount;  // 컨텍스트 스위칭 횟수
 
+        // 스케줄러 (Strategy Pattern)
+        private IScheduler _scheduler;
+
         // =====================================================================
         // 프로퍼티
         // =====================================================================
@@ -75,6 +79,8 @@ namespace RTOScope.RTOS.Kernel
         public float TotalIdleTime => _totalIdleTime;
         public ReadyList ReadyList => _readyList;
         public int ContextSwitchCount => _contextSwitchCount;
+        public IScheduler Scheduler => _scheduler;
+        public SchedulerType CurrentSchedulerType => _scheduler?.Type ?? SchedulerType.Priority;
 
         // =====================================================================
         // 생성자
@@ -92,6 +98,7 @@ namespace RTOScope.RTOS.Kernel
             _virtualTime = 0f;
             _totalIdleTime = 0f;
             _contextSwitchCount = 0;
+            _scheduler = new PriorityScheduler(); // 기본 스케줄러
         }
 
         // =====================================================================
@@ -286,34 +293,60 @@ namespace RTOScope.RTOS.Kernel
         }
 
         /// <summary>
-        /// 스케줄링: ReadyList에서 가장 높은 우선순위 태스크 선택
+        /// 스케줄링: 현재 스케줄러를 사용하여 다음 태스크 선택
         /// </summary>
         private TCB Schedule()
         {
-            // ReadyList에서 최고 우선순위 태스크 확인 (제거 안함)
-            TCB highest = _readyList.PeekHighest();
+            // ReadyList를 리스트로 변환
+            var readyTasks = _readyList.GetAllReady();
 
-            if (highest == null)
+            // 스케줄러에게 다음 태스크 선택 위임
+            TCB selected = _scheduler.SelectNext(readyTasks, _currentTcb);
+
+            if (selected == null)
             {
                 // Ready 태스크 없음 -> Idle 반환
                 return null;
             }
 
-            // 현재 실행 중인 태스크와 비교
-            if (_currentTcb != null &&
-                _currentTcb != _idleTaskTcb &&
-                _currentTcb.State == TaskState.Running)
-            {
-                // 현재 태스크보다 높은 우선순위면 선점
-                if (highest.CurrentPriority < _currentTcb.CurrentPriority)
-                {
-                    return highest;
-                }
-                // 동일 또는 낮은 우선순위면 현재 태스크 계속
-                return _currentTcb;
-            }
+            return selected;
+        }
 
-            return highest;
+        /// <summary>
+        /// 스케줄러 변경
+        /// </summary>
+        public void SetScheduler(SchedulerType type)
+        {
+            switch (type)
+            {
+                case SchedulerType.Priority:
+                    _scheduler = new PriorityScheduler();
+                    break;
+                case SchedulerType.RoundRobin:
+                    _scheduler = new RoundRobinScheduler();
+                    break;
+                case SchedulerType.FCFS:
+                    _scheduler = new FCFSScheduler();
+                    break;
+                case SchedulerType.SJF:
+                    _scheduler = new SJFScheduler();
+                    break;
+                default:
+                    _scheduler = new PriorityScheduler();
+                    break;
+            }
+            _scheduler.Reset();
+            Debug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
+        }
+
+        /// <summary>
+        /// 스케줄러 직접 설정
+        /// </summary>
+        public void SetScheduler(IScheduler scheduler)
+        {
+            _scheduler = scheduler ?? new PriorityScheduler();
+            _scheduler.Reset();
+            Debug.Log($"[RTOSKernel] 스케줄러 변경: {_scheduler.Name}");
         }
 
         /// <summary>

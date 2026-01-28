@@ -28,11 +28,12 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_LIMITS = 2;
         private const int TOTAL_STEPS = 3;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs = {
-            0.0003f, // Read
-            0.0004f, // Burn
-            0.0003f  // Limits
-        };
+            0.005f,  // Read (5ms)
+            0.010f,  // Burn (10ms)
+            0.005f   // Limits (5ms)
+        };           // 총 WCET: 20ms
 
         // 소모 모델 (단위: L/s)
         // 요구사항: 스로틀 0% => 10 L/s, 100% => 40 L/s

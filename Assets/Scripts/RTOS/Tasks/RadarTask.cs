@@ -49,14 +49,14 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_UPDATE_TRACKING = 4;
         private const int TOTAL_STEPS = 5;
 
-        // 각 Step의 WCET (초 단위)
+        // 각 Step의 WCET (초 단위) - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs = {
-            0.0005f,  // Step 0: 스윕 (0.5ms)
-            0.0008f,  // Step 1: 데이터 수집 (0.8ms)
-            0.001f,   // Step 2: 필터링 (1ms)
-            0.0015f,  // Step 3: 표적 식별 (1.5ms)
-            0.0005f   // Step 4: 추적 업데이트 (0.5ms)
-        };                // 총 WCET: 4.3ms
+            0.002f,   // Step 0: 스윕 (2ms)
+            0.003f,   // Step 1: 데이터 수집 (3ms)
+            0.004f,   // Step 2: 필터링 (4ms)
+            0.005f,   // Step 3: 표적 식별 (5ms)
+            0.002f    // Step 4: 추적 업데이트 (2ms)
+        };                // 총 WCET: 16ms
 
         // =====================================================================
         // 필드

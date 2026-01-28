@@ -256,6 +256,26 @@ namespace RTOScope.RTOS.Kernel
             }
         }
 
+        /// <summary>
+        /// 모든 Ready 상태 태스크를 리스트로 반환 (스케줄러 인터페이스용)
+        /// </summary>
+        /// <returns>Ready 태스크 목록</returns>
+        public IReadOnlyList<TCB> GetAllReady()
+        {
+            var result = new List<TCB>(_count);
+            
+            // 우선순위 순서대로 모든 Ready 태스크 수집
+            for (int i = 0; i < MAX_PRIORITY_LEVELS; i++)
+            {
+                foreach (var tcb in _priorityLists[i])
+                {
+                    result.Add(tcb);
+                }
+            }
+            
+            return result;
+        }
+
         // =====================================================================
         // 디버그/모니터링용
         // =====================================================================

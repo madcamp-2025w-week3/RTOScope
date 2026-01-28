@@ -31,13 +31,14 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_TRACKING_MANAGEMENT = 3;
         private const int TOTAL_STEPS = 4;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs =
         {
-            0.0004f, // Step 0
-            0.0003f, // Step 1
-            0.0004f, // Step 2
-            0.0005f  // Step 3
-        };
+            0.002f,  // Step 0 (2ms)
+            0.002f,  // Step 1 (2ms)
+            0.002f,  // Step 2 (2ms)
+            0.003f   // Step 3 (3ms)
+        };           // 총 WCET: 9ms
 
         // =====================================================================
         // 무장 제어 상수

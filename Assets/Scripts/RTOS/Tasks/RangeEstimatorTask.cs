@@ -30,12 +30,13 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_FUEL_WARNING = 2;
         private const int TOTAL_STEPS = 3;
 
+        // 각 Step의 WCET - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs =
         {
-            0.0002f, // Step 0: Endurance 계산
-            0.0002f, // Step 1: Range 계산
-            0.0002f  // Step 2: 연료 경고
-        };
+            0.005f,  // Step 0: Endurance 계산 (5ms)
+            0.005f,  // Step 1: Range 계산 (5ms)
+            0.005f   // Step 2: 연료 경고 (5ms)
+        };           // 총 WCET: 15ms
 
         // =====================================================================
         // 연료 경고 임계값

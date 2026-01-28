@@ -59,6 +59,10 @@ namespace RTOScope.Runtime.Bootstrap
         [Tooltip("FixedUpdate 사용 (물리 동기화 권장)")]
         [SerializeField] private bool _useFixedUpdate = true;
 
+        [Header("스케줄러 설정")]
+        [Tooltip("스케줄링 알고리즘 선택")]
+        [SerializeField] private SchedulerType _schedulerType = SchedulerType.Priority;
+
         [Header("디버그")]
         [SerializeField] private bool _logInitialization = true;
 
@@ -177,84 +181,84 @@ namespace RTOScope.Runtime.Bootstrap
                 deadlineType: DeadlineType.Hard
             );
 
-            // WeaponControlTask: 높은 우선순위, 50Hz, Soft Deadline
+            // WeaponControlTask: 높은 우선순위, 20Hz, Soft Deadline
             _kernel.RegisterTask(
                 task: _weaponControlTask,
                 priority: TaskPriority.High,
-                period: 0.02f,          // 20ms (50Hz)
-                deadline: 0.02f,
-                deadlineType: DeadlineType.Soft
-            );
-
-            // RadarTask: 높은 우선순위, 20Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _radarTask,
-                priority: TaskPriority.High,
-                period: 0.05f,          // 50ms (20Hz)
+                period: 0.05f,          // 50ms (20Hz) - 스케줄러 비교용 조정
                 deadline: 0.05f,
                 deadlineType: DeadlineType.Soft
             );
 
-            // HealthMonitor: 중간 우선순위, 10Hz, Soft Deadline
+            // RadarTask: 높은 우선순위, 10Hz, Soft Deadline
             _kernel.RegisterTask(
-                task: _healthMonitor,
-                priority: TaskPriority.Medium,
-                period: 0.1f,           // 100ms (10Hz)
+                task: _radarTask,
+                priority: TaskPriority.High,
+                period: 0.1f,           // 100ms (10Hz) - 스케줄러 비교용 조정
                 deadline: 0.1f,
                 deadlineType: DeadlineType.Soft
             );
 
-            // CollisionAvoidanceTask: 높은 우선순위, 33Hz, Soft Deadline
+            // HealthMonitor: 중간 우선순위, 5Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _healthMonitor,
+                priority: TaskPriority.Medium,
+                period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
+                deadline: 0.2f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // CollisionAvoidanceTask: 높은 우선순위, 20Hz, Soft Deadline
             _kernel.RegisterTask(
                 task: _collisionAvoidanceTask,
                 priority: TaskPriority.High,
-                period: 0.03f,          // 30ms (~33Hz)
-                deadline: 0.03f,
-                deadlineType: DeadlineType.Soft
-            );
-
-            // FuelManagementTask: 중간 우선순위, 4Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _fuelManagementTask,
-                priority: TaskPriority.Medium,
-                period: 0.25f,          // 250ms (4Hz)
-                deadline: 0.25f,
-                deadlineType: DeadlineType.Soft
-            );
-
-            // CountermeasureControlTask: 높은 우선순위, 20Hz, Soft Deadline
-            _kernel.RegisterTask(
-                task: _countermeasureControlTask,
-                priority: TaskPriority.High,
-                period: 0.05f,          // 50ms (20Hz)
+                period: 0.05f,          // 50ms (20Hz) - 스케줄러 비교용 조정
                 deadline: 0.05f,
                 deadlineType: DeadlineType.Soft
             );
 
-            // EngineHealthTask: 중간 우선순위, 10Hz, Soft Deadline
+            // FuelManagementTask: 중간 우선순위, 2Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _fuelManagementTask,
+                priority: TaskPriority.Medium,
+                period: 0.5f,           // 500ms (2Hz) - 스케줄러 비교용 조정
+                deadline: 0.5f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // CountermeasureControlTask: 높은 우선순위, 10Hz, Soft Deadline
+            _kernel.RegisterTask(
+                task: _countermeasureControlTask,
+                priority: TaskPriority.High,
+                period: 0.1f,           // 100ms (10Hz) - 스케줄러 비교용 조정
+                deadline: 0.1f,
+                deadlineType: DeadlineType.Soft
+            );
+
+            // EngineHealthTask: 중간 우선순위, 5Hz, Soft Deadline
             _kernel.RegisterTask(
                 task: _engineHealthTask,
                 priority: TaskPriority.Medium,
-                period: 0.1f,           // 100ms (10Hz)
-                deadline: 0.15f,        // 150ms
+                period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
+                deadline: 0.3f,
                 deadlineType: DeadlineType.Soft
             );
 
-            // StoresManagementTask: 중간 우선순위, 10Hz, Soft Deadline
+            // StoresManagementTask: 중간 우선순위, 5Hz, Soft Deadline
             _kernel.RegisterTask(
                 task: _storesManagementTask,
                 priority: TaskPriority.Medium,
-                period: 0.1f,           // 100ms (10Hz)
-                deadline: 0.15f,        // 150ms
+                period: 0.2f,           // 200ms (5Hz) - 스케줄러 비교용 조정
+                deadline: 0.3f,
                 deadlineType: DeadlineType.Soft
             );
 
-            // RangeEstimatorTask: 낮은 우선순위, 2Hz, Soft Deadline
+            // RangeEstimatorTask: 낮은 우선순위, 1Hz, Soft Deadline
             _kernel.RegisterTask(
                 task: _rangeEstimatorTask,
                 priority: TaskPriority.Low,
-                period: 0.5f,           // 500ms (2Hz)
-                deadline: 1.0f,         // 1s
+                period: 1.0f,           // 1000ms (1Hz) - 스케줄러 비교용 조정
+                deadline: 1.5f,
                 deadlineType: DeadlineType.Soft
             );
 
@@ -329,7 +333,13 @@ namespace RTOScope.Runtime.Bootstrap
             {
                 Debug.Log("[RTOSRunner] RTOS 초기화 완료 - 5개 태스크 등록됨 (+ IdleTask)");
                 Debug.Log($"[RTOSRunner] FixedUpdate 사용: {_useFixedUpdate}, Fixed Timestep: {Time.fixedDeltaTime * 1000f:F1}ms");
+                Debug.Log($"[RTOSRunner] 스케줄러: {_kernel.Scheduler.Name}");
             }
+
+            // -----------------------------------------------------------------
+            // 8. 스케줄러 설정
+            // -----------------------------------------------------------------
+            _kernel.SetScheduler(_schedulerType);
         }
 
         /// <summary>RTOS 시작</summary>

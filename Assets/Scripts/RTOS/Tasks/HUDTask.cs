@@ -73,13 +73,13 @@ namespace RTOScope.RTOS.Tasks
         private const int STEP_OUTPUT_DATA = 3;
         private const int TOTAL_STEPS = 4;
 
-        // 각 Step의 WCET (초)
+        // 각 Step의 WCET (초) - 스케줄러 비교용 증가
         private static readonly float[] _stepWCETs = {
-            0.0003f,  // Step 0: 센서 읽기 (0.3ms)
-            0.0004f,  // Step 1: 속도/고도 계산 (0.4ms)
-            0.0003f,  // Step 2: 자세 계산 (0.3ms)
-            0.0002f   // Step 3: 출력 (0.2ms)
-        };            // 총 WCET: 1.2ms
+            0.002f,   // Step 0: 센서 읽기 (2ms)
+            0.003f,   // Step 1: 속도/고도 계산 (3ms)
+            0.002f,   // Step 2: 자세 계산 (2ms)
+            0.002f    // Step 3: 출력 (2ms)
+        };            // 총 WCET: 9ms
 
         // =====================================================================
         // 필드
