@@ -49,6 +49,7 @@ namespace RTOScope.RTOS.Tasks
         private const float BREAK_FOV = 100f; // 전체 각도 (추적 유지 강화)
         private const float BREAK_GRACE_TIME = 1.2f; // FOV 이탈 허용 시간 (추적 유지 강화)
         private const float MISSILE_LIFETIME = 8f; // 5~10초 권장
+        private const bool AUTO_BREAK_AFTER_FIRE = true;
 
         private const float DELTA_TIME = 0.02f; // 50Hz 기준
 
@@ -261,6 +262,10 @@ namespace RTOScope.RTOS.Tasks
 
             if (_state.WeaponFireAck)
             {
+                if (AUTO_BREAK_AFTER_FIRE && _state.LockedTargetValid)
+                {
+                    BreakLock("발사 후 자동 해제");
+                }
                 _state.WeaponFireAck = false;
                 int total = Mathf.Max(1, _state.TotalHardpoints);
                 _nextHardpointIndex = (_nextHardpointIndex + 1) % total;
