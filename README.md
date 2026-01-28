@@ -65,7 +65,6 @@
 | **다중 스케줄러** | FCFS, Priority-based, Round Robin, SJF 4가지 스케줄링 알고리즘 지원 |
 | **Task Control Block (TCB)** | 태스크 상태, 우선순위, 주기, 데드라인, 실행 통계 관리 |
 | **Hard/Soft Deadline** | 데드라인 유형에 따른 차별화된 처리 |
-| **동기화 프리미티브** | Mutex, Semaphore, MessageBus 구현 |
 | **RTOS Dashboard** | 실시간 커널 상태 및 태스크 통계 시각화 |
 
 ### ✈️ Flight System
@@ -80,9 +79,8 @@
 | Feature | Description |
 |---------|-------------|
 | **레이더 타겟 탐지** | FOV 및 거리 기반 적 탐지 |
-| **미사일 락온** | 수동/자동 타겟 락온 시스템 |
+| **미사일 락온** | 수동 타겟 락온 및 브레이크락 시스템 |
 | **유도 미사일 발사** | 실제 추적 알고리즘이 적용된 호밍 미사일 |
-| **대응책 시스템** | 플레어/채프 발사 시퀀스 |
 
 ### 🎮 Game Elements
 | Feature | Description |
@@ -171,7 +169,7 @@
 
 | Layer | Responsibility | Unity 의존성 |
 |-------|----------------|-------------|
-| **RTOS Layer** | 스케줄링, 태스크 관리, 동기화 | ❌ 없음 (Pure C#) |
+| **RTOS Layer** | 스케줄링, 태스크 관리 | ❌ 없음 (Pure C#) |
 | **HAL Layer** | 센서 입력, 액추에이터 출력 | ✅ Unity API 사용 |
 | **Unity Runtime** | 렌더링, 물리, UI | ✅ Unity API 사용 |
 
@@ -215,26 +213,6 @@
 | `HUDTask` | 9 (Low) | 33ms | Soft | HUD 데이터 갱신 |
 | `HealthMonitor` | 10 (Low) | 100ms | Soft | 시스템 상태 감시 |
 | `IdleTask` | 255 (Lowest) | - | - | 유휴 상태 처리 |
-
-### Synchronization Primitives
-
-```csharp
-// Mutex - 상호 배제
-RTOSMutex mutex = new RTOSMutex();
-mutex.Lock();
-// Critical Section
-mutex.Unlock();
-
-// Semaphore - 자원 관리
-RTOSSemaphore sem = new RTOSSemaphore(3); // 3개 자원
-sem.Wait();
-// Use resource
-sem.Signal();
-
-// MessageBus - 태스크 간 통신
-MessageBus.Publish("radar.target.detected", targetData);
-MessageBus.Subscribe("radar.target.detected", OnTargetDetected);
-```
 
 ---
 
@@ -377,7 +355,7 @@ Assets/
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/RTOScope.git
+git clone https://github.com/madcamp-2025w-week3/RTOScope.git
 
 # 2. Open with Unity Hub
 # Add project folder in Unity Hub and open
@@ -403,8 +381,8 @@ File → Build Settings → Windows → Build
 
 | Key | Action |
 |-----|--------|
-| `W` / `S` | Pitch (Up/Down) |
-| `A` / `D` | Roll (Left/Right) |
+| `↑` / `↓` | Pitch (Up/Down) |
+| `←` / `→` | Roll (Left/Right) |
 | `Q` / `E` | Yaw (Left/Right) |
 | `Shift` | Throttle Up |
 | `Ctrl` | Throttle Down |
@@ -413,16 +391,15 @@ File → Build Settings → Windows → Build
 
 | Key | Action |
 |-----|--------|
-| `Space` | Fire Missile |
-| `Tab` | Switch Target |
-| `F` | Deploy Flare |
-| `G` | Deploy Chaff |
+| `R` | Lock-On Target |
+| `F` | Fire Missile |
+| `C` | Break Lock |
 
 ### Camera Controls
 
 | Key | Action |
 |-----|--------|
-| `C` | Switch Camera View |
+| `V` | Switch Camera View |
 | `Mouse` | Look Around (Cockpit) |
 
 ---
