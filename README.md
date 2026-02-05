@@ -414,7 +414,7 @@ File → Build Settings → Windows → Build
       <sub>부산대학교 정보컴퓨터공학부</sub>
     </td>
     <td align="center">
-      <b>박정우 (Jungwoo Park)</b><br/>
+      <b>박정우 (Jeongwoo Park)</b><br/>
       <sub>HYU CSE 21</sub><br/>
       <sub>한양대학교 컴퓨터소프트웨어학부</sub>
     </td>
